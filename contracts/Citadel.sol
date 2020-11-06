@@ -3,10 +3,10 @@ pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
 
-import "./CitadelTokenLocker.sol";
+import "./Token/CitadelDaoTransport.sol";
 
 
-contract Citadel is CitadelTokenLocker {
+contract Citadel is CitadelDaoTransport {
 
     struct MultisigData {
         bytes4 id;

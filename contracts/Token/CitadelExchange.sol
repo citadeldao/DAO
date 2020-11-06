@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
 
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import "../node_modules/@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "../../node_modules/@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "./CitadelToken.sol";
 
 
