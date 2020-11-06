@@ -1,11 +1,15 @@
 const Citadel = artifacts.require("Citadel");
+const CitadelDao = artifacts.require("CitadelDao");
 
 // https://feeds.chain.link/usdt-eth
 // oracul: https://etherscan.io/address/0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46
 
 module.exports = async function(deployer) {
-    await deployer.deploy(
-        Citadel, // contract
+
+    var TokenInstance, DaoInstance;
+
+    deployer.deploy(
+        Citadel,
         [ // multisigs
             {
                 id: web3.utils.toHex('FF'),
@@ -36,5 +40,17 @@ module.exports = async function(deployer) {
         [ // _shares
             50,
             50
-        ]);
+        ]
+    ).then(function(instance){
+        TokenInstance = instance;
+        return deployer.deploy(
+            CitadelDao,
+            TokenInstance.address
+        );
+    }).then(async function(instance){
+        DaoInstance = instance;
+
+        await TokenInstance.initDaoTransport.sendTransaction(DaoInstance.address);
+    });
+
 };
