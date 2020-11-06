@@ -1,8 +1,4 @@
-//const truffleAssert = require('truffle-assertions');
 const BN = require('bignumber.js');
-
-//console.log(assert);
-//return;
 
 var Citadel = artifacts.require("Citadel");
 
