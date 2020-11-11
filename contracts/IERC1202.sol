@@ -9,7 +9,7 @@ pragma solidity 0.6.2;
  * - Ordered multiple result
  **/
 interface IERC1202 {
-
+/*
     function vote(uint issueId, uint option) external returns (bool success);
     function setStatus(uint issueId, bool isOpen) external returns (bool success);
 
@@ -24,5 +24,5 @@ interface IERC1202 {
 
     event OnVote(uint issueId, address indexed _from, uint _value);
     event OnStatusChange(uint issueId, bool newIsOpen);
-
+*/
 }

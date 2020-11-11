@@ -3,11 +3,10 @@ pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
 
-import "../ICitadelDaoTransport.sol";
 import "./CitadelTokenLocker.sol";
 
 
-contract CitadelDaoTransport is ICitadelDaoTransport, CitadelTokenLocker {
+contract CitadelDaoTransport is CitadelTokenLocker {
 
     address private _daoAddress;
 

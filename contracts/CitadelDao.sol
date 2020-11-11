@@ -4,11 +4,11 @@ pragma experimental ABIEncoderV2;
 
 
 import "./ICitadelDaoTransport.sol";
-import "./DAO/Managing.sol";
+import "./DAO/Voting.sol";
 
 
 // version 1
-contract CitadelDao is Managing {
+contract CitadelDao is Voting {
 
     constructor (address token) public {
         _Token = ICitadelDaoTransport(token);

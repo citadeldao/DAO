@@ -1,6 +1,6 @@
 const BN = require('bignumber.js');
 
-var Citadel = artifacts.require("Citadel");
+const Citadel = artifacts.require("Citadel");
 
 const totalSupply = 150000000;
 const unbondingPeriod = 3600;//60 * 60 * 24 * 365 * 4;
