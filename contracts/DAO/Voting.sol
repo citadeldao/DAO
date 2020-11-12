@@ -11,10 +11,14 @@ contract Voting is IERC1202, Managing {
     mapping (uint256 => Proposal) private _proposals;
     uint256 private _countProposals;
 
+    bool private _everyoneCreateProposal;
+    uint256 private _minAmountToCreate;
+
     byte public constant NATIVE_PROPOSAL = 0x00;
     byte public constant MULTI_PROPOSAL = 0x01;
 
     struct Proposal {
+        address creator;
         string title;
         string description;
         byte votingType;
@@ -41,6 +45,21 @@ contract Voting is IERC1202, Managing {
 
     mapping (address => mapping(uint => GotVote)) public _voted;
 
+    modifier canCreateProposals() {
+        if (hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender)) {
+            _;
+            return;
+        }
+        if (_everyoneCreateProposal) {
+            uint256 staked = _Token.lockedBalanceOf(msg.sender);
+            if (staked >= _minAmountToCreate) {
+                _;
+                return;
+            }
+        }
+        revert("Voting: you do not have permission");
+    }
+
     modifier hasProposal(uint id) {
         require(id > 0 && id <= _countProposals, "Voting: proposal does not exist");
         _;
@@ -58,14 +77,20 @@ contract Voting is IERC1202, Managing {
     event OnVote(uint indexed issueId, address indexed from, uint indexed option, uint256 weight);
     event OnProposalStatusChange(uint issueId, bool newIsOpen);
 
+    function createProposalAvailability(bool isAvailable, uint256 minStaked) external {
+        require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
+        _everyoneCreateProposal = isAvailable;
+        _minAmountToCreate = minStaked;
+    }
+
     function createProposal(
         string calldata title,
         string calldata description,
         uint quorumPct,
         uint supportPct,
         uint expiryTime
-    ) external {
-        require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
+    ) external canCreateProposals {
+        //require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(bytes(title).length > 0, "Voting: empty title");
         require(quorumPct > 0 && quorumPct<=100000, "Voting: quorum must be between 1 and 100000");
         require(supportPct >= 20000 && supportPct<=100000, "Voting: support must be between 20000 and 100000");
@@ -75,6 +100,7 @@ contract Voting is IERC1202, Managing {
 
         Proposal storage proposal = _proposals[_countProposals];
 
+        proposal.creator = msg.sender;
         proposal.title = title;
         proposal.description = description;
         proposal.quorumPct = quorumPct;
@@ -96,8 +122,8 @@ contract Voting is IERC1202, Managing {
         uint supportPct,
         uint expiryTime,
         string[] calldata options
-    ) external {
-        require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
+    ) external canCreateProposals {
+        //require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(bytes(title).length > 0, "Voting: empty title");
         require(quorumPct > 0 && quorumPct<=100000, "Voting: quorum must be between 1 and 100000");
         require(supportPct >= 20000 && supportPct<=100000, "Voting: support must be between 20000 and 100000");
@@ -126,6 +152,7 @@ contract Voting is IERC1202, Managing {
     function setProposalStatus(uint issueId, bool isOpen) external
     hasProposal(issueId)// override
     returns (bool) {
+        require(_proposals[issueId].creator == msg.sender || hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(_proposals[issueId].expiryTime < block.timestamp, "Voting: time is out");
         _proposals[issueId].isOpen = isOpen;
         emit OnProposalStatusChange(issueId, isOpen);
@@ -133,11 +160,9 @@ contract Voting is IERC1202, Managing {
 
     function getNewestProposal() external view
     returns (uint issueId, string memory title, byte votingType) {
-
         issueId = _countProposals;
         title = _proposals[issueId].title;
         votingType = _proposals[issueId].votingType;
-
     }
 
     function countProposals() external view returns (uint) {

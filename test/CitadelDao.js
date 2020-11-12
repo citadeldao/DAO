@@ -77,7 +77,7 @@ contract('CitadelDao Voting', function(accounts){
         await CitadelTokenInstance.lockCoins.sendTransaction(boughtTokens, {from: accounts[1]});
     })
 
-    it("can not createProposal without permission", async function(){
+    it("cannot createProposal without permission", async function(){
         const instance = await CitadelDao.deployed();
         try {
             await instance.createProposal.sendTransaction(title, description);
@@ -265,6 +265,43 @@ contract('CitadelDao Voting', function(accounts){
             true,
             'accepted'
         );
+    })
+
+    it("everyone is allowed to create proposal", async function(){
+        const instance = await CitadelDao.deployed();
+        await instance.createProposalAvailability.sendTransaction(true, 500);
+        assert(true);
+    })
+
+    it("cannot createProposal if they don't have enough staked coins", async function(){
+        const instance = await CitadelDao.deployed();
+        try {
+            await instance.createProposal.sendTransaction(
+                title,
+                description,
+                quorum,
+                support,
+                expiryTime,
+                {from: accounts[2]}
+            );
+        }catch(e){
+            assert(true);
+            return;
+        }
+        assert(false);
+    })
+
+    it("can createProposal if they have enough staked coins", async function(){
+        const instance = await CitadelDao.deployed();
+        await instance.createProposal.sendTransaction(
+            title,
+            description,
+            quorum,
+            support,
+            expiryTime,
+            {from: accounts[1]}
+        );
+        assert(true);
     })
 
 })
