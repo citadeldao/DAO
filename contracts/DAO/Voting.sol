@@ -83,6 +83,19 @@ contract Voting is IERC1202, Managing {
         _minAmountToCreate = minStaked;
     }
 
+    function availableToCreateProposals() external view returns (bool) {
+        if (hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender)) {
+            return true;
+        }
+        if (_everyoneCreateProposal) {
+            uint256 staked = _Token.lockedBalanceOf(msg.sender);
+            if (staked >= _minAmountToCreate) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function createProposal(
         string calldata title,
         string calldata description,
