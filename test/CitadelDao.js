@@ -206,4 +206,64 @@ contract('CitadelDao Voting', function(accounts){
         );
     })
 
+    it("proposalInfoNative", async function(){
+        const instance = await CitadelDao.deployed();
+        const proposal = await instance.proposalInfoNative.call(1);
+        assert.equal(
+            proposal.title,
+            title,
+            'title'
+        );
+        assert.equal(
+            proposal.votingType,
+            0x00,
+            'votingType'
+        );
+        assert.equal(
+            proposal.quorumPct.toNumber(),
+            quorum,
+            'quorumPct'
+        );
+        assert.equal(
+            proposal.supportPct.toNumber(),
+            support,
+            'supportPct'
+        );
+        assert.equal(
+            proposal.expiryTime.toNumber(),
+            expiryTime,
+            'expiryTime'
+        );
+        assert.equal(
+            proposal.voters.toNumber(),
+            1,
+            'voters'
+        );
+        assert.equal(
+            proposal.hasQuorum,
+            true,
+            'hasQuorum'
+        );
+        assert.equal(
+            proposal.isOpen,
+            false,
+            'isOpen'
+        );
+        assert.equal(
+            proposal.nay.toNumber(),
+            0,
+            'nay'
+        );
+        assert.equal(
+            proposal.yea.toNumber(),
+            1000,
+            'yea'
+        );
+        assert.equal(
+            proposal.accepted,
+            true,
+            'accepted'
+        );
+    })
+
 })
