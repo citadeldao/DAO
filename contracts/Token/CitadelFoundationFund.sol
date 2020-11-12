@@ -9,6 +9,7 @@ contract CitadelFoundationFund is CitadelInvestors {
     bool private _isInitialized;
     address private _addressFF;
     uint256 private _budget;
+    uint256 private _budgetClaimed;
     uint256 private _budgetUsed;
     uint private _stepsTotal;
     uint256 private _stepPrice;
@@ -20,6 +21,7 @@ contract CitadelFoundationFund is CitadelInvestors {
         uint startDate,
         uint256 budget,
         uint256 badgeUsed,
+        uint256 badgeClaimed,
         uint steps,
         uint256 available
     ) {
@@ -27,11 +29,12 @@ contract CitadelFoundationFund is CitadelInvestors {
         startDate = _startTime;
         budget = _budget;
         badgeUsed = _budgetUsed;
+        badgeClaimed = _budgetClaimed;
         steps = countSteps();
         if (steps == _stepsTotal) {
-            available = _budget.sub(_budgetUsed);
+            available = _budget.sub(_budgetClaimed);
         } else {
-            available = _stepPrice.mul(steps).sub(_budgetUsed);
+            available = _stepPrice.mul(steps).sub(_budgetClaimed);
         }
     }
 
@@ -39,19 +42,22 @@ contract CitadelFoundationFund is CitadelInvestors {
         uint256 available;
         uint steps = countSteps();
         if (steps == _stepsTotal) {
-            available = _budget.sub(_budgetUsed);
+            available = _budget.sub(_budgetClaimed);
         } else {
-            available = _stepPrice.mul(steps).sub(_budgetUsed);
+            available = _stepPrice.mul(steps).sub(_budgetClaimed);
         }
         if (available > 0) {
             _transfer(_bankAddress, _addressFF, available);
-            _budgetUsed = _budgetUsed.add(available);
+            _budgetClaimed = _budgetClaimed.add(available);
         }
     }
 
     function transferFF(address account, uint256 amount) external multisig(bytes4("FF")) {
         if (!_isMultisigReady(bytes4("FF"))) return;
-        _transfer(_addressFF, account, amount);
+        if (amount > 0) {
+            _transfer(_addressFF, account, amount);
+            _budgetUsed = _budgetUsed.add(amount);
+        }
     }
 
     function _initFFBudget(address addr, uint256 budget) internal {

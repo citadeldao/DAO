@@ -58,11 +58,4 @@ contract Citadel is CitadelDaoTransport {
         _publicSaleLimit = publicSaleLimit;
     }
 
-    /*
-    function withdrawalFunds (uint256 amount) external {
-        _transfer(msg.sender, _bankAddress, amount);
-        msg.sender.transfer(amount);
-    }
-    */
-
 }

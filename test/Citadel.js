@@ -1,5 +1,5 @@
 const BN = require('bignumber.js');
-
+//return;
 const Citadel = artifacts.require("Citadel");
 
 const totalSupply = 150000000;
@@ -207,7 +207,7 @@ contract('CitadelFoundationFund', function(accounts){
 
         const info = await instance.getFFInfo.call();
         assert.equal(
-            info.badgeUsed.toNumber(),
+            info.badgeClaimed.toNumber(),
             stepPrice.toNumber(),
             "badgeUsed"
         );

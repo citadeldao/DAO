@@ -23,7 +23,10 @@ contract CitadelCommunityFund is CitadelFoundationFund {
 
     function transferCF(address account, uint256 amount) external multisig(bytes4("CF")) {
         if (!_isMultisigReady(bytes4("CF"))) return;
-        _transfer(_addressCF, account, amount);
+        if (amount > 0) {
+            _transfer(_addressCF, account, amount);
+            _budgetUsed = _budgetUsed.add(amount);
+        }
     }
 
     function _initCFBudget(address addr, uint256 budget) internal {

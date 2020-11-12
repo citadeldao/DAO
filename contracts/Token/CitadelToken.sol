@@ -20,6 +20,7 @@ contract CitadelToken is ERC20("Citadel", "XCT"), Ownable, Pausable, Multisig {
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
 
+        require(uint(msg.sender) > 0, "CitadelToken: fake sender");
         require(!paused(), "ERC20Pausable: token transfer while paused");
     }
 
