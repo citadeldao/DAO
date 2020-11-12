@@ -7,4 +7,6 @@ interface ICitadelDaoTransport {
     function lockedBalanceOf(address account) external view returns (uint256);
     function lockedSupply() external view returns (uint256);
 
+    function transferStakingRewards(address account, uint256 amount) external;
+
 }

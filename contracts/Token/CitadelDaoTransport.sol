@@ -23,4 +23,8 @@ contract CitadelDaoTransport is CitadelTokenLocker {
         return _daoAddress;
     }
 
+    function transferStakingRewards(address account, uint256 amount) external onlyDaoContract {
+        _transferStakingRewards(account, amount);
+    }
+
 }

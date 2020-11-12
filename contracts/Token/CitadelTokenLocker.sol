@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
 
-import "./CitadelCommunityFund.sol";
+import "./CitadelInfStaking.sol";
 
-contract CitadelTokenLocker is CitadelCommunityFund {
+contract CitadelTokenLocker is CitadelInfStaking {
 
     mapping (address => uint256) public lockedCoins;
     bool private _isInitialized;

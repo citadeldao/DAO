@@ -1,4 +1,5 @@
 const BN = require('bignumber.js');
+const EthCrypto = require("eth-crypto");
 const createKeccakHash = require('keccak');
 
 function keccak256(str){
@@ -264,6 +265,38 @@ contract('CitadelDao Voting', function(accounts){
             true,
             'accepted'
         );
+    })
+
+})
+
+contract('CitadelDao Rewarding', function(accounts){
+
+    it("claim staking rewards", async function(){
+
+        const instance = await CitadelDao.deployed();
+
+        const signer = web3.eth.accounts.create();
+        const signerPrivateKey = signer.privateKey;
+        const signerAddress = signer.address;
+
+        await instance.setRewardAddress.sendTransaction(signerAddress);
+
+        const recipient = accounts[3];
+
+        const reward = 12345; // my reward from staking
+        const hash = EthCrypto.hash.keccak256([ // hash to verify data
+            {type: "address", value: recipient},
+            {type: "uint256", value: reward}
+        ]);
+        const signature = EthCrypto.sign(signerPrivateKey, hash); // check request
+
+        await instance.claimReward.sendTransaction(reward, hash, signature, {from: recipient});
+
+        const CitadelTokenInstance = await Citadel.deployed();
+        assert.equal(
+            await CitadelTokenInstance.balanceOf.call(recipient),
+            reward
+        )
     })
 
 })
