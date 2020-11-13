@@ -2,14 +2,14 @@ const BN = require('bignumber.js');
 const EthCrypto = require("eth-crypto");
 const createKeccakHash = require('keccak');
 
-function keccak256(str){
-    return createKeccakHash('keccak256').update(str).digest();
-}
-
 const Citadel = artifacts.require("Citadel");
 const CitadelDao = artifacts.require("CitadelDao");
 
 const ADMIN_ROLE = keccak256('ADMIN_ROLE');
+
+function keccak256(str){
+    return createKeccakHash('keccak256').update(str).digest();
+}
 
 contract('CitadelDao', function(accounts){
 

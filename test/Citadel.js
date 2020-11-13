@@ -1,5 +1,4 @@
 const BN = require('bignumber.js');
-//return;
 const Citadel = artifacts.require("Citadel");
 
 const totalSupply = 150000000;
