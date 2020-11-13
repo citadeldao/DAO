@@ -7,5 +7,6 @@ interface ICitadelVesting {
     function updateInflation(uint value) external;
     function updateVestingRatio(uint value) external;
     function userFrozeCoins(address user) external;
+    function userUnfrozeCoins(address user) external;
 
 }

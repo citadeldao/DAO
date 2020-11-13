@@ -56,12 +56,13 @@ module.exports = async function(deployer) {
         return deployer.deploy(
             CitadelVesting,
             TokenInstance.address,
-            100 * 1000,
-            0.4 * 1000
+            100,
+            0.4 * 1e8
         );
     }).then(async function(instance){
         VestingInstance = instance;
 
+        await TokenInstance.initVestingTransport.sendTransaction(VestingInstance.address);
         await VestingInstance.renounceOwnership.sendTransaction();
     });
 

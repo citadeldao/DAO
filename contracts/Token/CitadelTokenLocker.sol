@@ -2,9 +2,11 @@
 pragma solidity 0.6.2;
 
 import "./CitadelInfStaking.sol";
+import "../ICitadelVesting.sol";
 
 contract CitadelTokenLocker is CitadelInfStaking {
 
+    ICitadelVesting private _Vesting;
     mapping (address => uint256) public lockedCoins;
     bool private _isInitialized;
     address private _lockerAddress;
@@ -13,6 +15,7 @@ contract CitadelTokenLocker is CitadelInfStaking {
 
         _transfer(msg.sender, _lockerAddress, amount);
         lockedCoins[msg.sender] = lockedCoins[msg.sender].add(amount);
+        _Vesting.userFrozeCoins(msg.sender);
 
     }
 
@@ -20,6 +23,7 @@ contract CitadelTokenLocker is CitadelInfStaking {
 
         _transfer(_lockerAddress, msg.sender, amount);
         lockedCoins[msg.sender] = lockedCoins[msg.sender].sub(amount);
+        _Vesting.userUnfrozeCoins(msg.sender);
 
     }
 
@@ -33,6 +37,14 @@ contract CitadelTokenLocker is CitadelInfStaking {
 
         return balanceOf(_lockerAddress);
 
+    }
+
+    function initVestingTransport(address vestAddress) external onlyOwner {
+        _Vesting = ICitadelVesting(vestAddress);
+    }
+
+    function getVestingAddress() external view returns (address) {
+        return address(_Vesting);
     }
 
     function _initCitadelTokenLocker(address lockerAddress_) internal {
