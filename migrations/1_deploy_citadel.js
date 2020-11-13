@@ -1,12 +1,13 @@
 const Citadel = artifacts.require("Citadel");
 const CitadelDao = artifacts.require("CitadelDao");
+const CitadelVesting = artifacts.require("CitadelVesting");
 
 // https://feeds.chain.link/usdt-eth
 // oracul: https://etherscan.io/address/0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46
 
 module.exports = async function(deployer) {
 
-    var TokenInstance, DaoInstance;
+    var TokenInstance, DaoInstance, VestingInstance;
 
     deployer.deploy(
         Citadel,
@@ -51,6 +52,17 @@ module.exports = async function(deployer) {
         DaoInstance = instance;
 
         await TokenInstance.initDaoTransport.sendTransaction(DaoInstance.address);
+
+        return deployer.deploy(
+            CitadelVesting,
+            TokenInstance.address,
+            100 * 1000,
+            0.4 * 1000
+        );
+    }).then(async function(instance){
+        VestingInstance = instance;
+
+        await VestingInstance.renounceOwnership.sendTransaction();
     });
 
 };
