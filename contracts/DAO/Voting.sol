@@ -17,6 +17,11 @@ contract Voting is IERC1202, Managing {
     byte public constant NATIVE_PROPOSAL = 0x00;
     byte public constant MULTI_PROPOSAL = 0x01;
 
+    struct ProposalConfig {
+        uint quorumPct;
+        uint supportPct;
+    }
+
     struct Proposal {
         address creator;
         string title;
@@ -43,7 +48,8 @@ contract Voting is IERC1202, Managing {
         uint256 amount;
     }
 
-    mapping (address => mapping(uint => GotVote)) public _voted;
+    mapping (address => mapping(uint => GotVote)) private _voted;
+    mapping (byte => ProposalConfig) private _proposalConfigs;
 
     modifier canCreateProposals() {
         if (hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender)) {
@@ -76,6 +82,14 @@ contract Voting is IERC1202, Managing {
     );
     event OnVote(uint indexed issueId, address indexed from, uint indexed option, uint256 weight);
     event OnProposalStatusChange(uint issueId, bool newIsOpen);
+    event UpdatedProposalConfig(byte confId, uint quorumPct, uint supportPct);
+
+    constructor () public {
+        uint quorumPct = 50 * 1000;
+        uint supportPct = 20 * 1000;
+        _proposalConfigs[0x00] = ProposalConfig(quorumPct, supportPct);
+        emit UpdatedProposalConfig(0x00, quorumPct, supportPct);
+    }
 
     function createProposalAvailability(bool isAvailable, uint256 minStaked) external {
         require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
@@ -99,25 +113,26 @@ contract Voting is IERC1202, Managing {
     function createProposal(
         string calldata title,
         string calldata description,
-        uint quorumPct,
-        uint supportPct,
+        //uint quorumPct,
+        //uint supportPct,
         uint expiryTime
     ) external canCreateProposals {
         //require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(bytes(title).length > 0, "Voting: empty title");
-        require(quorumPct > 0 && quorumPct<=100000, "Voting: quorum must be between 1 and 100000");
-        require(supportPct >= 20000 && supportPct<=100000, "Voting: support must be between 20000 and 100000");
+        //require(quorumPct > 0 && quorumPct<=100000, "Voting: quorum must be between 1 and 100000");
+        //require(supportPct >= 20000 && supportPct<=100000, "Voting: support must be between 20000 and 100000");
         require(expiryTime > block.timestamp, "Voting: time must be bigger than current");
 
         _countProposals++;
 
         Proposal storage proposal = _proposals[_countProposals];
+        ProposalConfig memory conf = _proposalConfigs[0x00];
 
         proposal.creator = msg.sender;
         proposal.title = title;
         proposal.description = description;
-        proposal.quorumPct = quorumPct;
-        proposal.supportPct = supportPct;
+        proposal.quorumPct = conf.quorumPct;
+        proposal.supportPct = conf.supportPct;
         proposal.expiryTime = expiryTime;
         proposal.votingType = NATIVE_PROPOSAL;
         proposal.isOpen = true;
@@ -131,26 +146,27 @@ contract Voting is IERC1202, Managing {
     function createProposal(
         string calldata title,
         string calldata description,
-        uint quorumPct,
-        uint supportPct,
+        //uint quorumPct,
+        //uint supportPct,
         uint expiryTime,
         string[] calldata options
     ) external canCreateProposals {
         //require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(bytes(title).length > 0, "Voting: empty title");
-        require(quorumPct > 0 && quorumPct<=100000, "Voting: quorum must be between 1 and 100000");
-        require(supportPct >= 20000 && supportPct<=100000, "Voting: support must be between 20000 and 100000");
+        //require(quorumPct > 0 && quorumPct<=100000, "Voting: quorum must be between 1 and 100000");
+        //require(supportPct >= 20000 && supportPct<=100000, "Voting: support must be between 20000 and 100000");
         require(expiryTime > block.timestamp, "Voting: time must be bigger than current");
         require(options.length > 1, "Voting: must be at least two options");
 
         _countProposals++;
 
         Proposal storage proposal = _proposals[_countProposals];
+        ProposalConfig memory conf = _proposalConfigs[0x00];
 
         proposal.title = title;
         proposal.description = description;
-        proposal.quorumPct = quorumPct;
-        proposal.supportPct = supportPct;
+        proposal.quorumPct = conf.quorumPct;
+        proposal.supportPct = conf.supportPct;
         proposal.expiryTime = expiryTime;
         proposal.votingType = MULTI_PROPOSAL;
         proposal.isOpen = true;
