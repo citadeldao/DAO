@@ -56,7 +56,6 @@ module.exports = async function(deployer) {
         return deployer.deploy(
             CitadelVesting,
             TokenInstance.address,
-            100,
             0.4 * 1e8
         );
     }).then(async function(instance){

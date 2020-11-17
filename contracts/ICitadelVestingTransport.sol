@@ -7,4 +7,11 @@ interface ICitadelVestingTransport {
     function lockedBalanceOf(address account) external view returns (uint256);
     function lockedSupply() external view returns (uint256);
 
+    function getVestingInfo() external view returns (
+        address addr,
+        uint pct,
+        uint256 budget,
+        uint256 budgeUsed
+    );
+
 }

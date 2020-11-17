@@ -42,10 +42,10 @@ contract CitadelVesting is Ownable {
 
     constructor (
         address addressOfToken,
-        uint inflation,
         uint vestingRatio
     ) public {
         _Token = ICitadelVestingTransport(addressOfToken);
+        ( , , uint inflation, ) = _Token.getVestingInfo();
         _inflations.push(Option(inflation, block.timestamp));
         _vestingRatios.push(Option(vestingRatio, block.timestamp));
         _totalSupplyHistory.push(Option(0, block.timestamp));
@@ -123,7 +123,7 @@ contract CitadelVesting is Ownable {
                 }
                 updatedDate = time;
                 uint period = time - snapshot.dateUpdate; // seconds
-                snapshot.vested += vestInfl * userPct * period / 1 days / 1e8;
+                snapshot.vested += vestInfl * userPct * period / 365 days / 1e8;
                 // check gas limit
                 uint gasUsed = startGas - gasleft();
                 if (gasUsed > 200000 || block.gaslimit - 10000 < gasUsed) break;
