@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
 
-import "./CitadelInfStaking.sol";
+import "./CitadelInflation.sol";
 import "../ICitadelVesting.sol";
 
-contract CitadelTokenLocker is CitadelInfStaking {
+contract CitadelTokenLocker is CitadelInflation {
 
     ICitadelVesting private _Vesting;
     mapping (address => uint256) public lockedCoins;
@@ -45,6 +45,12 @@ contract CitadelTokenLocker is CitadelInfStaking {
 
     function getVestingAddress() external view returns (address) {
         return address(_Vesting);
+    }
+
+    function _updatedInflationRatio(uint stakingAmount, uint vestingAmount) internal override {
+
+        _Vesting.updateInflation(vestingAmount);
+
     }
 
     function _initCitadelTokenLocker(address lockerAddress_) internal {

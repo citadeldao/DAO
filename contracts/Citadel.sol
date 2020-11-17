@@ -49,11 +49,11 @@ contract Citadel is CitadelDaoTransport {
         publicSaleLimit = publicSaleLimit.sub(value);
         _initCFBudget(address(2), value);
 
-        value = initialSupply.mul(36).div(100);
-        publicSaleLimit = publicSaleLimit.sub(value);
-        _initStakingBudget(address(3), value);
+        uint256 vestingBudget = initialSupply.mul(60).div(100);
+        publicSaleLimit = publicSaleLimit.sub(vestingBudget);
+        _initInflation(vestingBudget, address(3), 60, address(4), 40);
 
-        _initCitadelTokenLocker(address(4));
+        _initCitadelTokenLocker(address(5));
 
         _publicSaleLimit = publicSaleLimit;
     }
