@@ -14,8 +14,18 @@ contract Voting is IERC1202, Managing {
     bool private _everyoneCreateProposal;
     uint256 private _minAmountToCreate;
 
-    byte public constant NATIVE_PROPOSAL = 0x00;
-    byte public constant MULTI_PROPOSAL = 0x01;
+    enum ProposalType {
+        Native,
+        Multi
+    }
+
+    enum ProposalUpdater {
+        Nothing,
+        Inflation,
+        Vesting,
+        CreateProposal,
+        UpdateConfig
+    }
 
     struct ProposalConfig {
         uint quorumPct;
@@ -26,7 +36,9 @@ contract Voting is IERC1202, Managing {
         address creator;
         string title;
         string description;
-        byte votingType;
+        ProposalType votingType;
+        ProposalUpdater votingUpdater;
+        string updateData;
         uint quorumPct;
         bool hasQuorum;
         uint supportPct;
@@ -49,7 +61,7 @@ contract Voting is IERC1202, Managing {
     }
 
     mapping (address => mapping(uint => GotVote)) private _voted;
-    mapping (byte => ProposalConfig) private _proposalConfigs;
+    mapping (uint8 => ProposalConfig) private _proposalConfigs;
 
     modifier canCreateProposals() {
         if (hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender)) {
@@ -75,20 +87,21 @@ contract Voting is IERC1202, Managing {
         uint indexed issueId,
         address indexed creator,
         string title,
-        byte indexed votingType,
+        ProposalType indexed votingType,
+        ProposalUpdater votingUpdater,
         uint quorumPct,
         uint supportPct,
         uint expiryTime
     );
     event OnVote(uint indexed issueId, address indexed from, uint indexed option, uint256 weight);
-    event OnProposalStatusChange(uint issueId, bool newIsOpen);
-    event UpdatedProposalConfig(byte confId, uint quorumPct, uint supportPct);
+    event OnProposalStatusChange(uint indexed issueId, bool newIsOpen);
+    event UpdatedProposalConfig(ProposalUpdater indexed updater, uint quorumPct, uint supportPct);
 
     constructor () public {
         uint quorumPct = 50 * 1000;
         uint supportPct = 20 * 1000;
-        _proposalConfigs[0x00] = ProposalConfig(quorumPct, supportPct);
-        emit UpdatedProposalConfig(0x00, quorumPct, supportPct);
+        _proposalConfigs[uint8(ProposalUpdater.Nothing)] = ProposalConfig(quorumPct, supportPct);
+        emit UpdatedProposalConfig(ProposalUpdater.Nothing, quorumPct, supportPct);
     }
 
     function createProposalAvailability(bool isAvailable, uint256 minStaked) external {
@@ -110,12 +123,12 @@ contract Voting is IERC1202, Managing {
         return false;
     }
 
-    function createProposal(
+    function newProposal(
         string calldata title,
         string calldata description,
-        //uint quorumPct,
-        //uint supportPct,
-        uint expiryTime
+        uint expiryTime,
+        ProposalUpdater votingUpdater,
+        string calldata updateData
     ) external canCreateProposals {
         //require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(bytes(title).length > 0, "Voting: empty title");
@@ -126,7 +139,7 @@ contract Voting is IERC1202, Managing {
         _countProposals++;
 
         Proposal storage proposal = _proposals[_countProposals];
-        ProposalConfig memory conf = _proposalConfigs[0x00];
+        ProposalConfig memory conf = _proposalConfigs[uint8(votingUpdater)];
 
         proposal.creator = msg.sender;
         proposal.title = title;
@@ -134,22 +147,27 @@ contract Voting is IERC1202, Managing {
         proposal.quorumPct = conf.quorumPct;
         proposal.supportPct = conf.supportPct;
         proposal.expiryTime = expiryTime;
-        proposal.votingType = NATIVE_PROPOSAL;
+        proposal.votingType = ProposalType.Native;
+        proposal.votingUpdater = votingUpdater;
         proposal.isOpen = true;
+
+        if (votingUpdater != ProposalUpdater.Nothing) {
+            require(_updaterValidateData(votingUpdater, updateData), "Voting: incorrect updating data");
+            proposal.updateData = updateData;
+        }
 
         proposal.options.push(ProposalOption('nay', 0, 0));
         proposal.options.push(ProposalOption('yea', 0, 0));
 
-        emit NewProposal(_countProposals, msg.sender, title, NATIVE_PROPOSAL, quorumPct, supportPct, expiryTime);
+        emit NewProposal(_countProposals, msg.sender, title, ProposalType.Native, votingUpdater, conf.quorumPct, conf.supportPct, expiryTime);
     }
 
-    function createProposal(
+    function newMultiProposal(
         string calldata title,
         string calldata description,
-        //uint quorumPct,
-        //uint supportPct,
         uint expiryTime,
-        string[] calldata options
+        string[] calldata options,
+        ProposalUpdater votingUpdater
     ) external canCreateProposals {
         //require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(bytes(title).length > 0, "Voting: empty title");
@@ -161,21 +179,32 @@ contract Voting is IERC1202, Managing {
         _countProposals++;
 
         Proposal storage proposal = _proposals[_countProposals];
-        ProposalConfig memory conf = _proposalConfigs[0x00];
+        ProposalConfig memory conf = _proposalConfigs[uint8(votingUpdater)];
 
         proposal.title = title;
         proposal.description = description;
         proposal.quorumPct = conf.quorumPct;
         proposal.supportPct = conf.supportPct;
         proposal.expiryTime = expiryTime;
-        proposal.votingType = MULTI_PROPOSAL;
+        proposal.votingType = ProposalType.Multi;
+        proposal.votingUpdater = votingUpdater;
         proposal.isOpen = true;
 
         for (uint i = 0; i < options.length; i++) {
+            if (votingUpdater != ProposalUpdater.Nothing) {
+                require(_updaterValidateData(votingUpdater, options[i]), "Voting: incorrect updating data");
+            }
             proposal.options.push(ProposalOption(options[i], 0, 0));
         }
 
-        emit NewProposal(_countProposals, msg.sender, title, MULTI_PROPOSAL, quorumPct, supportPct, expiryTime);
+        emit NewProposal(_countProposals, msg.sender, title, ProposalType.Multi, votingUpdater, conf.quorumPct, conf.supportPct, expiryTime);
+    }
+
+    function _updaterValidateData(
+        ProposalUpdater votingUpdater,
+        string memory updateData
+    ) private pure returns (bool) {
+        return true;
     }
 
     function setProposalStatus(uint issueId, bool isOpen) external
@@ -188,10 +217,16 @@ contract Voting is IERC1202, Managing {
     }
 
     function getNewestProposal() external view
-    returns (uint issueId, string memory title, byte votingType) {
+    returns (
+        uint issueId,
+        string memory title,
+        ProposalType votingType,
+        ProposalUpdater votingUpdater
+    ) {
         issueId = _countProposals;
         title = _proposals[issueId].title;
         votingType = _proposals[issueId].votingType;
+        votingUpdater = _proposals[issueId].votingUpdater;
     }
 
     function countProposals() external view returns (uint) {
@@ -204,7 +239,7 @@ contract Voting is IERC1202, Managing {
         bytes4 yea = bytes4("yea");
         bytes4 nay = bytes4("nay");
         require(option == yea || option == nay, "Voting: you should say yea or nay");
-        require(_proposals[issueId].votingType == NATIVE_PROPOSAL, "Voting: please choose an option by index");
+        require(_proposals[issueId].votingType == ProposalType.Native, "Voting: please choose an option by index");
         uint optionId = 0;
         if (option == yea) optionId = 1;
         return _vote(issueId, optionId);
@@ -265,37 +300,49 @@ contract Voting is IERC1202, Managing {
         return _proposals[issueId].options[option].count;
     }
 
-    function proposalInfoNative(uint issueId) external view
+    function proposalInfo(uint issueId) external view
     hasProposal(issueId)
     returns (
         string memory title,
-        byte votingType,
-        uint quorumPct,
-        uint supportPct,
+        ProposalType votingType,
+        ProposalUpdater votingUpdater,
         uint nay,
         uint yea,
         bool hasQuorum,
         bool accepted,
         uint expiryTime,
-        uint voters,
         bool isOpen
     ) {
         Proposal memory proposal = _proposals[issueId];
 
         title = proposal.title;
         votingType = proposal.votingType;
-        quorumPct = proposal.quorumPct;
-        supportPct = proposal.supportPct;
+        votingUpdater = proposal.votingUpdater;
         expiryTime = proposal.expiryTime;
-        voters = proposal.voters;
         hasQuorum = proposal.hasQuorum;
         isOpen = proposal.isOpen;
 
-        if(votingType == NATIVE_PROPOSAL){
+        if(votingType == ProposalType.Native){
             nay = proposal.options[0].weight;
             yea = proposal.options[1].weight;
-            accepted = hasQuorum && supportPct <= (yea * 100000 / proposal.totalVotingPower);
+            accepted = hasQuorum && proposal.supportPct <= (yea * 100000 / proposal.totalVotingPower);
         }
+    }
+
+    function proposalConfig(uint issueId) external view
+    hasProposal(issueId)
+    returns (
+        uint quorumPct,
+        uint supportPct,
+        uint voters,
+        string memory updateData
+    ) {
+        Proposal memory proposal = _proposals[issueId];
+
+        quorumPct = proposal.quorumPct;
+        supportPct = proposal.supportPct;
+        voters = proposal.voters;
+        updateData = proposal.updateData;
     }
 
     function _vote(uint issueId, uint option) private

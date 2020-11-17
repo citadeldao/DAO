@@ -51,7 +51,7 @@ contract('CitadelDao Voting', function(accounts){
     const title = 'Hello World';
     const description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
     const quorum = 50 * 1000;
-    const support = 35 * 1000;
+    const support = 20 * 1000;
     const expiryTime = parseInt(new Date().getTime() / 1000 + 1000); // seconds
 
     it("lock coins to get some vote power", async function(){
@@ -80,7 +80,7 @@ contract('CitadelDao Voting', function(accounts){
     it("cannot createProposal without permission", async function(){
         const instance = await CitadelDao.deployed();
         try {
-            await instance.createProposal.sendTransaction(title, description);
+            await instance.newProposal.sendTransaction(title, description, expiryTime, 0, '');
         }catch(e){
             assert(true);
             return;
@@ -91,23 +91,21 @@ contract('CitadelDao Voting', function(accounts){
     it("create default proposal (yea / nay)", async function(){
         const instance = await CitadelDao.deployed();
         await instance.addAdmin.sendTransaction(accounts[0]);
-        await instance.createProposal.sendTransaction(
+        await instance.newProposal.sendTransaction(
             title,
             description,
-            quorum,
-            support,
-            expiryTime
+            expiryTime,
+            0, // update nothing
+            '' // no data for updating
         );
     })
 
     it("create multi proposal", async function(){
         const instance = await CitadelDao.deployed();
         await instance.addAdmin.sendTransaction(accounts[0]);
-        await instance.createProposal.sendTransaction(
+        await instance.newMultiProposal.sendTransaction(
             title,
             description,
-            quorum,
-            support,
             expiryTime,
             [
                 'one',
@@ -115,7 +113,8 @@ contract('CitadelDao Voting', function(accounts){
                 'three',
                 'four',
                 'five'
-            ]
+            ],
+            0 // update nothing
         );
     })
 
@@ -207,9 +206,9 @@ contract('CitadelDao Voting', function(accounts){
         );
     })
 
-    it("proposalInfoNative", async function(){
+    it("proposalInfo", async function(){
         const instance = await CitadelDao.deployed();
-        const proposal = await instance.proposalInfoNative.call(1);
+        const proposal = await instance.proposalInfo.call(1);
         assert.equal(
             proposal.title,
             title,
@@ -217,28 +216,18 @@ contract('CitadelDao Voting', function(accounts){
         );
         assert.equal(
             proposal.votingType,
-            0x00,
+            0,
             'votingType'
         );
         assert.equal(
-            proposal.quorumPct.toNumber(),
-            quorum,
-            'quorumPct'
-        );
-        assert.equal(
-            proposal.supportPct.toNumber(),
-            support,
-            'supportPct'
+            proposal.votingUpdater,
+            0,
+            'votingUpdater'
         );
         assert.equal(
             proposal.expiryTime.toNumber(),
             expiryTime,
             'expiryTime'
-        );
-        assert.equal(
-            proposal.voters.toNumber(),
-            1,
-            'voters'
         );
         assert.equal(
             proposal.hasQuorum,
@@ -267,6 +256,31 @@ contract('CitadelDao Voting', function(accounts){
         );
     })
 
+    it("proposalConfig", async function(){
+        const instance = await CitadelDao.deployed();
+        const proposal = await instance.proposalConfig.call(1);
+        assert.equal(
+            proposal.quorumPct.toNumber(),
+            quorum,
+            'quorumPct'
+        );
+        assert.equal(
+            proposal.supportPct.toNumber(),
+            support,
+            'supportPct'
+        );
+        assert.equal(
+            proposal.voters.toNumber(),
+            1,
+            'voters'
+        );
+        assert.equal(
+            proposal.updateData,
+            '',
+            'updateData'
+        );
+    })
+
     it("everyone is allowed to create proposal", async function(){
         const instance = await CitadelDao.deployed();
         await instance.createProposalAvailability.sendTransaction(true, 500);
@@ -276,12 +290,12 @@ contract('CitadelDao Voting', function(accounts){
     it("cannot createProposal if they don't have enough staked coins", async function(){
         const instance = await CitadelDao.deployed();
         try {
-            await instance.createProposal.sendTransaction(
+            await instance.newProposal.sendTransaction(
                 title,
                 description,
-                quorum,
-                support,
                 expiryTime,
+                0,
+                '',
                 {from: accounts[2]}
             );
         }catch(e){
@@ -293,12 +307,12 @@ contract('CitadelDao Voting', function(accounts){
 
     it("can createProposal if they have enough staked coins", async function(){
         const instance = await CitadelDao.deployed();
-        await instance.createProposal.sendTransaction(
+        await instance.newProposal.sendTransaction(
             title,
             description,
-            quorum,
-            support,
             expiryTime,
+            0,
+            '',
             {from: accounts[1]}
         );
         assert(true);
