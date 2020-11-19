@@ -71,6 +71,10 @@ contract CitadelVesting is Ownable {
         _writeUserSnapshot(userAddress);
     }
 
+    function getVestingRatio() external view returns (uint) {
+        return _vestingRatios[_vestingRatios.length - 1].value;
+    }
+
     function availableVestOf(address userAddress) external view returns (uint) {
         if (_userSnapshots[userAddress].dateUpdate == 0) return 0;
         UserSnapshot memory snapshot = _makeUserSnapshot(userAddress);

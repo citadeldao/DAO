@@ -10,5 +10,6 @@ interface ICitadelDaoTransport {
     function transferStakingRewards(address account, uint256 amount) external;
 
     function changeInflationRatio(uint stakingPct, uint vestingPct) external;
+    function changeVestingRatio(uint value) external;
 
 }

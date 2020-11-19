@@ -49,6 +49,26 @@ contract Voting is IERC1202, Managing {
         uint voters;
     }
 
+    struct ProposalInfo {
+        string title;
+        ProposalType votingType;
+        ProposalUpdater votingUpdater;
+        uint nay;
+        uint yea;
+        bool hasQuorum;
+        bool accepted;
+        uint expiryTime;
+        bool isOpen;
+    }
+
+    struct ProposalInfoConfig {
+        address creator;
+        uint quorumPct;
+        uint supportPct;
+        uint voters;
+        string updateData;
+    }
+
     struct ProposalOption {
         string name;
         uint256 count;
@@ -93,6 +113,7 @@ contract Voting is IERC1202, Managing {
         uint supportPct,
         uint expiryTime
     );
+    event ExecProposal(uint indexed issueId, address indexed initialized);
     event OnVote(uint indexed issueId, address indexed from, uint indexed option, uint256 weight);
     event OnProposalStatusChange(uint indexed issueId, bool newIsOpen);
     event UpdatedProposalConfig(ProposalUpdater indexed updater, uint quorumPct, uint supportPct);
@@ -102,6 +123,7 @@ contract Voting is IERC1202, Managing {
         uint supportPct = 20 * 1000;
         _proposalConfigs[uint8(ProposalUpdater.Nothing)] = ProposalConfig(quorumPct, supportPct);
         emit UpdatedProposalConfig(ProposalUpdater.Nothing, quorumPct, supportPct);
+        _proposalConfigs[uint8(ProposalUpdater.Inflation)] = ProposalConfig(quorumPct, supportPct);
     }
 
     function createProposalAvailability(bool isAvailable, uint256 minStaked) external {
@@ -181,6 +203,7 @@ contract Voting is IERC1202, Managing {
         Proposal storage proposal = _proposals[_countProposals];
         ProposalConfig memory conf = _proposalConfigs[uint8(votingUpdater)];
 
+        proposal.creator = msg.sender;
         proposal.title = title;
         proposal.description = description;
         proposal.quorumPct = conf.quorumPct;
@@ -200,11 +223,70 @@ contract Voting is IERC1202, Managing {
         emit NewProposal(_countProposals, msg.sender, title, ProposalType.Multi, votingUpdater, conf.quorumPct, conf.supportPct, expiryTime);
     }
 
+    function execProposal(uint issueId) external {
+
+        ProposalInfo memory info = _proposalInfo(issueId);
+
+        ProposalInfoConfig memory infoConfig = _proposalConfig(issueId);
+
+        require(infoConfig.creator == msg.sender || hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
+        require(info.votingUpdater != ProposalUpdater.Nothing, "Voting: this proposal is not executable");
+        require(info.expiryTime <= block.timestamp, "Voting: voting period is not finished yet");
+        require(info.accepted, "Voting: this proposal it not accepted");
+
+        string memory updateData;
+        if (info.votingType == ProposalType.Multi) {
+
+        } else {
+            updateData = infoConfig.updateData;
+        }
+
+        if (info.votingUpdater == ProposalUpdater.Inflation) {
+            uint256 value = parseInt(updateData);
+            uint stakingPct = value / 1000;
+            uint vestingPct = value - stakingPct * 1000;
+            _Token.changeInflationRatio(stakingPct, vestingPct);
+        } else if (info.votingUpdater == ProposalUpdater.Vesting) {
+            uint256 value = parseInt(updateData);
+            _Token.changeVestingRatio(value);
+        } else if (info.votingUpdater == ProposalUpdater.CreateProposal) {
+            _minAmountToCreate = parseInt(updateData);
+        }
+
+        emit ExecProposal(issueId, msg.sender);
+    }
+
     function _updaterValidateData(
         ProposalUpdater votingUpdater,
         string memory updateData
     ) private pure returns (bool) {
-        return true;
+        if (votingUpdater == ProposalUpdater.Nothing) return true;
+        if (votingUpdater == ProposalUpdater.Inflation) {
+            uint256 value = parseInt(updateData);
+            uint stakingPct = value / 1000;
+            uint vestingPct = value - stakingPct * 1000;
+            return (stakingPct + vestingPct == 100);
+        } else if (votingUpdater == ProposalUpdater.Vesting) {
+            uint256 value = parseInt(updateData);
+            return value > 0 && value <= 5*1e8;
+        } else if (votingUpdater == ProposalUpdater.CreateProposal) {
+            uint256 value = parseInt(updateData);
+            return value > 0;
+        }
+        return false;
+    }
+
+    function parseInt(string memory _value)
+        public
+        pure
+        returns (uint _ret) {
+        bytes memory _bytesValue = bytes(_value);
+        uint j = 1;
+        for(uint i = _bytesValue.length-1; i >= 0 && i < _bytesValue.length; i--) {
+            assert(uint8(_bytesValue[i]) >= 48 && uint8(_bytesValue[i]) <= 57);
+            _ret += (uint8(_bytesValue[i]) - 48)*j;
+            j*=10;
+        }
     }
 
     function setProposalStatus(uint issueId, bool isOpen) external
@@ -301,7 +383,6 @@ contract Voting is IERC1202, Managing {
     }
 
     function proposalInfo(uint issueId) external view
-    hasProposal(issueId)
     returns (
         string memory title,
         ProposalType votingType,
@@ -313,36 +394,72 @@ contract Voting is IERC1202, Managing {
         uint expiryTime,
         bool isOpen
     ) {
+        ProposalInfo memory info = _proposalInfo(issueId);
+        title = info.title;
+        votingType = info.votingType;
+        votingUpdater = info.votingUpdater;
+        nay = info.nay;
+        yea = info.yea;
+        hasQuorum = info.hasQuorum;
+        accepted = info.accepted;
+        expiryTime = info.expiryTime;
+        isOpen = info.isOpen;
+    }
+
+    function _proposalInfo(uint issueId) internal view
+    hasProposal(issueId)
+    returns (
+        ProposalInfo memory info
+    ) {
         Proposal memory proposal = _proposals[issueId];
 
-        title = proposal.title;
-        votingType = proposal.votingType;
-        votingUpdater = proposal.votingUpdater;
-        expiryTime = proposal.expiryTime;
-        hasQuorum = proposal.hasQuorum;
-        isOpen = proposal.isOpen;
+        info.title = proposal.title;
+        info.votingType = proposal.votingType;
+        info.votingUpdater = proposal.votingUpdater;
+        info.expiryTime = proposal.expiryTime;
+        info.hasQuorum = proposal.hasQuorum;
+        info.isOpen = proposal.isOpen;
+        if (info.isOpen && info.expiryTime <= block.timestamp) info.isOpen = false;
 
-        if(votingType == ProposalType.Native){
-            nay = proposal.options[0].weight;
-            yea = proposal.options[1].weight;
-            accepted = hasQuorum && proposal.supportPct <= (yea * 100000 / proposal.totalVotingPower);
+        if(info.votingType == ProposalType.Native){
+            info.nay = proposal.options[0].weight;
+            info.yea = proposal.options[1].weight;
+            if (!info.isOpen && info.hasQuorum) {
+                info.accepted = proposal.supportPct <= (info.yea * 100000 / proposal.totalVotingPower);
+            } else {
+                info.accepted = false;
+            }
         }
     }
 
     function proposalConfig(uint issueId) external view
-    hasProposal(issueId)
     returns (
+        address creator,
         uint quorumPct,
         uint supportPct,
         uint voters,
         string memory updateData
     ) {
+        ProposalInfoConfig memory info = _proposalConfig(issueId);
+        creator = info.creator;
+        quorumPct = info.quorumPct;
+        supportPct = info.supportPct;
+        voters = info.voters;
+        updateData = info.updateData;
+    }
+
+    function _proposalConfig(uint issueId) internal view
+    hasProposal(issueId)
+    returns (
+        ProposalInfoConfig memory info
+    ) {
         Proposal memory proposal = _proposals[issueId];
 
-        quorumPct = proposal.quorumPct;
-        supportPct = proposal.supportPct;
-        voters = proposal.voters;
-        updateData = proposal.updateData;
+        info.creator = proposal.creator;
+        info.quorumPct = proposal.quorumPct;
+        info.supportPct = proposal.supportPct;
+        info.voters = proposal.voters;
+        info.updateData = proposal.updateData;
     }
 
     function _vote(uint issueId, uint option) private
@@ -368,14 +485,14 @@ contract Voting is IERC1202, Managing {
         proposal.options[option].count++;
         proposal.options[option].weight += tokens;
 
-        uint supply = _Token.lockedSupply();
-        uint hasQuorum = proposal.totalVotingPower * 100000;
-        uint quorumRctNow = hasQuorum / supply;
+        if (!proposal.hasQuorum) {
+            uint supply = _Token.lockedSupply();
+            uint hasQuorum = proposal.totalVotingPower * 100000;
+            uint quorumRctNow = hasQuorum / supply;
 
-        if (quorumRctNow >= proposal.quorumPct) {
-            proposal.hasQuorum = true;
-            proposal.isOpen = false;
-            emit OnProposalStatusChange(issueId, false);
+            if (quorumRctNow >= proposal.quorumPct) {
+                proposal.hasQuorum = true;
+            }
         }
 
         emit OnVote(issueId, sender, option, tokens);

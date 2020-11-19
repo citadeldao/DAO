@@ -48,9 +48,11 @@ contract CitadelTokenLocker is CitadelInflation {
     }
 
     function _updatedInflationRatio(uint stakingAmount, uint vestingAmount) internal override {
-
         _Vesting.updateInflation(vestingAmount);
+    }
 
+    function _updatedVestingRatio(uint value) internal {
+        _Vesting.updateVestingRatio(value);
     }
 
     function _initCitadelTokenLocker(address lockerAddress_) internal {

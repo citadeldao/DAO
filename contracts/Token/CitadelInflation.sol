@@ -50,11 +50,11 @@ contract CitadelInflation is CitadelCommunityFund {
         uint256 stakingAmount = _budgetAmount.mul(stakingPct).div(100);
         uint256 vestingAmount = _budgetAmount.sub(stakingAmount);
         if (stakingPct < _stakingPct) {
-            require(stakingAmount < _stakingUsed, "CitadelInflation: new staking budget less than already used");
+            require(stakingAmount >= _stakingUsed, "CitadelInflation: new staking budget less than already used");
             uint256 diff = _stakingAmount.sub(stakingAmount);
             if (diff > 0) _transfer(_addressStaking, _addressVesting, diff);
         } else {
-            require(vestingAmount < _vestingUsed, "CitadelInflation: new vesting budget less than already used");
+            require(vestingAmount >= _vestingUsed, "CitadelInflation: new vesting budget less than already used");
             uint256 diff = _vestingAmount.sub(vestingAmount);
             if (diff > 0) _transfer(_addressVesting, _addressStaking, diff);
         }
