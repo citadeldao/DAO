@@ -171,6 +171,7 @@ contract('CitadelDao Voting', function(accounts){
     it("vote", async function(){
         const instance = await CitadelDao.deployed();
         await instance.vote.sendTransaction(1, 1);
+        await new Promise(next => setTimeout(next, 2000));
     })
 
     it("ballotOf", async function(){
@@ -237,11 +238,6 @@ contract('CitadelDao Voting', function(accounts){
             proposal.hasQuorum,
             true,
             'hasQuorum'
-        );
-        assert.equal(
-            proposal.isOpen,
-            false,
-            'isOpen'
         );
         assert.equal(
             proposal.nay.toNumber(),
@@ -374,16 +370,12 @@ contract('CitadelDao Voting (Updater)', function(accounts){
         const instance = await CitadelDao.deployed();
         let proposal = await instance.getNewestProposal.call();
         await instance.vote.sendTransaction(proposal.issueId, 1);
+        await new Promise(next => setTimeout(next, 2000 + expiryTime * 1000 - new Date().getTime()));
         let result = await instance.proposalInfo.call(proposal.issueId);
         assert.equal(
             result.hasQuorum,
             true,
             'hasQuorum'
-        );
-        assert.equal(
-            result.isOpen,
-            false,
-            'isOpen'
         );
         assert.equal(
             result.accepted,
@@ -394,7 +386,6 @@ contract('CitadelDao Voting (Updater)', function(accounts){
 
     it("execute updater inflation", async function(){
         const instance = await CitadelDao.deployed();
-        await new Promise(next => setTimeout(next, 1000));
         let proposal = await instance.getNewestProposal.call();
         await instance.execProposal.sendTransaction(proposal.issueId);
     })
@@ -424,7 +415,7 @@ contract('CitadelDao Voting (Updater)', function(accounts){
             description,
             expiryTime,
             2, // update vesting
-            (1 * 1e8).toString() // 50 for staking + 50 for vesting
+            parseInt(0.6 * 1e8).toString() // 50 for staking + 50 for vesting
         );
     })
 
@@ -432,17 +423,12 @@ contract('CitadelDao Voting (Updater)', function(accounts){
         const instance = await CitadelDao.deployed();
         let proposal = await instance.getNewestProposal.call();
         await instance.vote.sendTransaction(proposal.issueId, 1);
-        await new Promise(next => setTimeout(next, 1000));
+        await new Promise(next => setTimeout(next, 2000 + expiryTime * 1000 - new Date().getTime()));
         let result = await instance.proposalInfo.call(proposal.issueId);
         assert.equal(
             result.hasQuorum,
             true,
             'hasQuorum'
-        );
-        assert.equal(
-            result.isOpen,
-            false,
-            'isOpen'
         );
         assert.equal(
             result.accepted,
@@ -461,14 +447,14 @@ contract('CitadelDao Voting (Updater)', function(accounts){
         const instance = await CitadelVesting.deployed();
         assert.equal(
             (await instance.getVestingRatio.call()).toNumber(),
-            1 * 1e8
+            parseInt(0.6 * 1e8)
         );
     })
 
-    /*it("create updater vesting (multi)", async function(){
+    it("create updater vesting (multi)", async function(){
         const instance = await CitadelDao.deployed();
         await instance.addAdmin.sendTransaction(accounts[0]);
-        expiryTime += parseInt((new Date().getTime() - startTime) / 1000)
+        expiryTime = parseInt(new Date().getTime() / 1000 + 2);
         await instance.newMultiProposal.sendTransaction(
             title,
             description,
@@ -479,7 +465,7 @@ contract('CitadelDao Voting (Updater)', function(accounts){
                 parseInt(0.6 * 1e8).toString(),
                 parseInt(0.7 * 1e8).toString(),
                 parseInt(0.8 * 1e8).toString(),
-            ]
+            ],
             2, // update vesting
         );
     })
@@ -488,6 +474,80 @@ contract('CitadelDao Voting (Updater)', function(accounts){
         const instance = await CitadelDao.deployed();
         let proposal = await instance.getNewestProposal.call();
         await instance.vote.sendTransaction(proposal.issueId, 1);
+        await new Promise(next => setTimeout(next, 2000 + expiryTime * 1000 - new Date().getTime()));
+        let info = await instance.proposalInfo.call(proposal.issueId);
+        assert.equal(
+            info.hasQuorum,
+            true,
+            'hasQuorum'
+        );
+        let config = await instance.proposalConfig.call(proposal.issueId);
+        let countOptions = await instance.countOptions.call(proposal.issueId);
+        let maxIndex = -1;
+        let maxWeight = -1;
+        let totalWeight = 0;
+        let tie = false;
+        for(let i = 0; i < countOptions; i++){
+            let option = await instance.optionInfo.call(proposal.issueId, i);
+            totalWeight += option.weight;
+            if(option.weight > maxWeight){
+                maxIndex = i;
+                maxWeight = option.weight;
+                tie = false;
+            } else if (option.weight == maxWeight) {
+                tie = true;
+            }
+        }
+        assert.equal(
+            tie,
+            false,
+            'tie'
+        );
+        assert.equal(
+            maxIndex,
+            1,
+            'chosenOption'
+        );
+        console.log(maxWeight * 100000 / totalWeight);
+        assert.equal(
+            maxWeight * 100000 / totalWeight >= config.supportPct,
+            true,
+            'accepted'
+        );
+    })
+
+    it("execute updater vesting (multi)", async function(){
+        const instance = await CitadelDao.deployed();
+        let proposal = await instance.getNewestProposal.call();
+        await instance.execProposal.sendTransaction(proposal.issueId);
+    })
+
+    it("check updated vesting (multi)", async function(){
+        const instance = await CitadelVesting.deployed();
+        assert.equal(
+            (await instance.getVestingRatio.call()).toNumber(),
+            parseInt(0.5 * 1e8)
+        );
+    })
+
+    it("create updater minimum to create proposal", async function(){
+        const instance = await CitadelDao.deployed();
+        await instance.addAdmin.sendTransaction(accounts[0]);
+        expiryTime = parseInt(new Date().getTime() / 1000 + 2);
+        await instance.newProposal.sendTransaction(
+            title,
+            description,
+            expiryTime,
+            3, // update minimum to create proposal
+            '500' // 500 frozen coins to create proposal
+        );
+    })
+
+    it("vote for updater minimum to create proposal", async function(){
+        const instance = await CitadelDao.deployed();
+        let proposal = await instance.getNewestProposal.call();
+        await instance.vote.sendTransaction(proposal.issueId, 1);
+        await new Promise(next => setTimeout(next, 2000 + expiryTime * 1000 - new Date().getTime()));
         let result = await instance.proposalInfo.call(proposal.issueId);
         assert.equal(
             result.hasQuorum,
@@ -495,35 +555,77 @@ contract('CitadelDao Voting (Updater)', function(accounts){
             'hasQuorum'
         );
         assert.equal(
-            result.isOpen,
-            false,
-            'isOpen'
+            result.accepted,
+            true,
+            'accepted'
         );
-        let resultConfig = await instance.proposalConfig.call(proposal.issueId);
     })
 
-    it("execute updater inflation", async function(){
+    it("execute updater minimum to create proposal", async function(){
         const instance = await CitadelDao.deployed();
-        await new Promise(next => setTimeout(next, 1000));
         let proposal = await instance.getNewestProposal.call();
         await instance.execProposal.sendTransaction(proposal.issueId);
     })
 
-    it("check updated inflation", async function(){
-        const instance = await Citadel.deployed();
-        let staking = await instance.getStakingInfo.call();
-        let vesting = await instance.getVestingInfo.call();
+    it("check updated minimum to create proposal", async function(){
+        const instance = await CitadelDao.deployed();
         assert.equal(
-            staking.pct.toNumber(),
-            50,
-            'staking'
+            (await instance.minAmountToCreate.call()).toNumber(),
+            500
+        );
+    })
+
+    it("create updater config", async function(){
+        const instance = await CitadelDao.deployed();
+        await instance.addAdmin.sendTransaction(accounts[0]);
+        expiryTime = parseInt(new Date().getTime() / 1000 + 2);
+        await instance.newProposal.sendTransaction(
+            title,
+            description,
+            expiryTime,
+            4, // update minimum to create proposal
+            '1070000060000' // 500 frozen coins to create proposal
+        );
+    })
+
+    it("vote for updater config", async function(){
+        const instance = await CitadelDao.deployed();
+        let proposal = await instance.getNewestProposal.call();
+        await instance.vote.sendTransaction(proposal.issueId, 1);
+        await new Promise(next => setTimeout(next, 2000 + expiryTime * 1000 - new Date().getTime()));
+        let result = await instance.proposalInfo.call(proposal.issueId);
+        assert.equal(
+            result.hasQuorum,
+            true,
+            'hasQuorum'
         );
         assert.equal(
-            vesting.pct.toNumber(),
-            50,
-            'vesting'
+            result.accepted,
+            true,
+            'accepted'
         );
-    })*/
+    })
+
+    it("execute updater config", async function(){
+        const instance = await CitadelDao.deployed();
+        let proposal = await instance.getNewestProposal.call();
+        await instance.execProposal.sendTransaction(proposal.issueId);
+    })
+
+    it("check updated config", async function(){
+        const instance = await CitadelDao.deployed();
+        let result = await instance.proposalConfigRates.call(1);
+        assert.equal(
+            result.quorumPct.toNumber(),
+            70*1000,
+            'quorumPct'
+        );
+        assert.equal(
+            result.supportPct.toNumber(),
+            60*1000,
+            'supportPct'
+        );
+    })
 
 })
 

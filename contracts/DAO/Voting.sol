@@ -44,7 +44,6 @@ contract Voting is IERC1202, Managing {
         uint supportPct;
         ProposalOption[] options;
         uint expiryTime;
-        bool isOpen;
         uint totalVotingPower;
         uint voters;
     }
@@ -58,7 +57,6 @@ contract Voting is IERC1202, Managing {
         bool hasQuorum;
         bool accepted;
         uint expiryTime;
-        bool isOpen;
     }
 
     struct ProposalInfoConfig {
@@ -115,7 +113,6 @@ contract Voting is IERC1202, Managing {
     );
     event ExecProposal(uint indexed issueId, address indexed initialized);
     event OnVote(uint indexed issueId, address indexed from, uint indexed option, uint256 weight);
-    event OnProposalStatusChange(uint indexed issueId, bool newIsOpen);
     event UpdatedProposalConfig(ProposalUpdater indexed updater, uint quorumPct, uint supportPct);
 
     constructor () public {
@@ -124,6 +121,16 @@ contract Voting is IERC1202, Managing {
         _proposalConfigs[uint8(ProposalUpdater.Nothing)] = ProposalConfig(quorumPct, supportPct);
         emit UpdatedProposalConfig(ProposalUpdater.Nothing, quorumPct, supportPct);
         _proposalConfigs[uint8(ProposalUpdater.Inflation)] = ProposalConfig(quorumPct, supportPct);
+    }
+
+    function minAmountToCreate() external view returns (uint256) {
+        return _minAmountToCreate;
+    }
+
+    function proposalConfigRates(ProposalUpdater conf) external view
+    returns (uint quorumPct, uint supportPct) {
+        quorumPct = _proposalConfigs[uint8(conf)].quorumPct;
+        supportPct = _proposalConfigs[uint8(conf)].supportPct;
     }
 
     function createProposalAvailability(bool isAvailable, uint256 minStaked) external {
@@ -171,7 +178,6 @@ contract Voting is IERC1202, Managing {
         proposal.expiryTime = expiryTime;
         proposal.votingType = ProposalType.Native;
         proposal.votingUpdater = votingUpdater;
-        proposal.isOpen = true;
 
         if (votingUpdater != ProposalUpdater.Nothing) {
             require(_updaterValidateData(votingUpdater, updateData), "Voting: incorrect updating data");
@@ -211,7 +217,6 @@ contract Voting is IERC1202, Managing {
         proposal.expiryTime = expiryTime;
         proposal.votingType = ProposalType.Multi;
         proposal.votingUpdater = votingUpdater;
-        proposal.isOpen = true;
 
         for (uint i = 0; i < options.length; i++) {
             if (votingUpdater != ProposalUpdater.Nothing) {
@@ -231,12 +236,28 @@ contract Voting is IERC1202, Managing {
 
         require(infoConfig.creator == msg.sender || hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(info.votingUpdater != ProposalUpdater.Nothing, "Voting: this proposal is not executable");
-        require(info.expiryTime <= block.timestamp, "Voting: voting period is not finished yet");
-        require(info.accepted, "Voting: this proposal it not accepted");
+        require(info.expiryTime < block.timestamp, "Voting: voting period is not finished yet");
+        if (info.votingType == ProposalType.Native){
+            require(info.accepted, "Voting: this proposal it not accepted");
+        }
 
         string memory updateData;
         if (info.votingType == ProposalType.Multi) {
-
+            uint maxIndex;
+            uint maxWeight;
+            bool tie;
+            for (uint i = 0; i < _proposals[issueId].options.length; i++) {
+                ProposalOption memory option = _proposals[issueId].options[i];
+                if (option.weight > maxWeight) {
+                    maxIndex = i;
+                    maxWeight = option.weight;
+                    tie = false;
+                } else if (option.weight == maxWeight) {
+                    tie = true;
+                }
+            }
+            require(!tie, "Voting: no leading option");
+            updateData = _proposals[issueId].options[maxIndex].name;
         } else {
             updateData = infoConfig.updateData;
         }
@@ -251,6 +272,24 @@ contract Voting is IERC1202, Managing {
             _Token.changeVestingRatio(value);
         } else if (info.votingUpdater == ProposalUpdater.CreateProposal) {
             _minAmountToCreate = parseInt(updateData);
+        } else if (info.votingUpdater == ProposalUpdater.UpdateConfig) {
+            bytes memory _bytes = bytes(updateData);
+            bytes memory confId = new bytes(1);
+            bytes memory quorumPctBts = new bytes(6);
+            bytes memory supportPctBts = new bytes(6);
+            require(_bytes.length == 13);
+            for(uint i = 0; i < _bytes.length; i++){
+                if (i < 1) {
+                    confId[0] = _bytes[0];
+                } else if (i < 7) {
+                    quorumPctBts[i - 1] = _bytes[i];
+                } else {
+                    supportPctBts[i - 7] = _bytes[i];
+                }
+            }
+            uint256 quorumPct = parseInt(string(quorumPctBts));
+            uint256 supportPct = parseInt(string(supportPctBts));
+            _proposalConfigs[uint8(parseInt(string(confId)))] = ProposalConfig(quorumPct, supportPct);
         }
 
         emit ExecProposal(issueId, msg.sender);
@@ -268,10 +307,31 @@ contract Voting is IERC1202, Managing {
             return (stakingPct + vestingPct == 100);
         } else if (votingUpdater == ProposalUpdater.Vesting) {
             uint256 value = parseInt(updateData);
-            return value > 0 && value <= 5*1e8;
+            return value > 0 && value < 1e8;
         } else if (votingUpdater == ProposalUpdater.CreateProposal) {
             uint256 value = parseInt(updateData);
             return value > 0;
+        } else if (votingUpdater == ProposalUpdater.UpdateConfig) {
+            bytes memory _bytes = bytes(updateData);
+            require(_bytes.length == 13);
+            bytes memory confId = new bytes(1);
+            bytes memory quorumPctBts = new bytes(6);
+            bytes memory supportPctBts = new bytes(6);
+            for(uint i = 0; i < _bytes.length; i++){
+                if (i < 1) {
+                    confId[0] = _bytes[0];
+                } else if (i < 7) {
+                    quorumPctBts[i - 1] = _bytes[i];
+                } else {
+                    supportPctBts[i - 7] = _bytes[i];
+                }
+            }
+            uint256 quorumPct = parseInt(string(quorumPctBts));
+            uint256 supportPct = parseInt(string(supportPctBts));
+            bool res = quorumPct > 0 && quorumPct <= 100*1000;
+            res = res && supportPct > 0 && supportPct <= 100*1000;
+            res = res && uint8(parseInt(string(confId))) <= uint8(ProposalUpdater.UpdateConfig);
+            return res;
         }
         return false;
     }
@@ -287,15 +347,6 @@ contract Voting is IERC1202, Managing {
             _ret += (uint8(_bytesValue[i]) - 48)*j;
             j*=10;
         }
-    }
-
-    function setProposalStatus(uint issueId, bool isOpen) external
-    hasProposal(issueId)// override
-    returns (bool) {
-        require(_proposals[issueId].creator == msg.sender || hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
-        require(_proposals[issueId].expiryTime < block.timestamp, "Voting: time is out");
-        _proposals[issueId].isOpen = isOpen;
-        emit OnProposalStatusChange(issueId, isOpen);
     }
 
     function getNewestProposal() external view
@@ -391,8 +442,7 @@ contract Voting is IERC1202, Managing {
         uint yea,
         bool hasQuorum,
         bool accepted,
-        uint expiryTime,
-        bool isOpen
+        uint expiryTime
     ) {
         ProposalInfo memory info = _proposalInfo(issueId);
         title = info.title;
@@ -403,7 +453,6 @@ contract Voting is IERC1202, Managing {
         hasQuorum = info.hasQuorum;
         accepted = info.accepted;
         expiryTime = info.expiryTime;
-        isOpen = info.isOpen;
     }
 
     function _proposalInfo(uint issueId) internal view
@@ -418,13 +467,11 @@ contract Voting is IERC1202, Managing {
         info.votingUpdater = proposal.votingUpdater;
         info.expiryTime = proposal.expiryTime;
         info.hasQuorum = proposal.hasQuorum;
-        info.isOpen = proposal.isOpen;
-        if (info.isOpen && info.expiryTime <= block.timestamp) info.isOpen = false;
 
         if(info.votingType == ProposalType.Native){
             info.nay = proposal.options[0].weight;
             info.yea = proposal.options[1].weight;
-            if (!info.isOpen && info.hasQuorum) {
+            if (info.expiryTime < block.timestamp && info.hasQuorum) {
                 info.accepted = proposal.supportPct <= (info.yea * 100000 / proposal.totalVotingPower);
             } else {
                 info.accepted = false;
@@ -467,12 +514,7 @@ contract Voting is IERC1202, Managing {
     returns (bool)
     {
         Proposal storage proposal = _proposals[issueId];
-        if (!proposal.isOpen) return false;
-        if (proposal.expiryTime < block.timestamp) {
-            proposal.isOpen = false;
-            emit OnProposalStatusChange(issueId, false);
-            return false;
-        }
+        if (proposal.expiryTime < block.timestamp) return false;
         address sender = msg.sender;
         uint256 tokens = _Token.lockedBalanceOf(sender);
         require(tokens > 0, "Voting: you have to lock your tokens before");
