@@ -13,5 +13,6 @@ interface ICitadelVestingTransport {
         uint256 budget,
         uint256 budgeUsed
     );
+    function yearInflationEmission(uint timestamp) external view returns (uint);
 
 }

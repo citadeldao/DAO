@@ -29,7 +29,7 @@ module.exports = async function(deployer) {
                 threshold: 2
             }
         ],
-        150000000, // initialSupply
+        1000000000, // initialSupply
         10, // rate eth2token
         45000, // buyer limit
         3600,//60 * 60 * 24 * 365 * 4, // initialUnbondingPeriod
@@ -56,7 +56,7 @@ module.exports = async function(deployer) {
         return deployer.deploy(
             CitadelVesting,
             TokenInstance.address,
-            0.4 * 1e8
+            true
         );
     }).then(async function(instance){
         VestingInstance = instance;

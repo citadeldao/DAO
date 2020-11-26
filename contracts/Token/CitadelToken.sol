@@ -10,10 +10,14 @@ import "../Multisig.sol";
 contract CitadelToken is ERC20("Citadel", "XCT"), Ownable, Pausable, Multisig {
 
     address public _bankAddress;
+    uint public deployDate;
 
     constructor () public {
 
         _bankAddress = address(this);
+        deployDate = block.timestamp;
+
+        _setupDecimals(6);
 
     }
 

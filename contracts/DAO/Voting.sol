@@ -22,7 +22,6 @@ contract Voting is IERC1202, Managing {
     enum ProposalUpdater {
         Nothing,
         Inflation,
-        Vesting,
         CreateProposal,
         UpdateConfig
     }
@@ -267,9 +266,6 @@ contract Voting is IERC1202, Managing {
             uint stakingPct = value / 1000;
             uint vestingPct = value - stakingPct * 1000;
             _Token.changeInflationRatio(stakingPct, vestingPct);
-        } else if (info.votingUpdater == ProposalUpdater.Vesting) {
-            uint256 value = parseInt(updateData);
-            _Token.changeVestingRatio(value);
         } else if (info.votingUpdater == ProposalUpdater.CreateProposal) {
             _minAmountToCreate = parseInt(updateData);
         } else if (info.votingUpdater == ProposalUpdater.UpdateConfig) {
@@ -305,9 +301,6 @@ contract Voting is IERC1202, Managing {
             uint stakingPct = value / 1000;
             uint vestingPct = value - stakingPct * 1000;
             return (stakingPct + vestingPct == 100);
-        } else if (votingUpdater == ProposalUpdater.Vesting) {
-            uint256 value = parseInt(updateData);
-            return value > 0 && value < 1e8;
         } else if (votingUpdater == ProposalUpdater.CreateProposal) {
             uint256 value = parseInt(updateData);
             return value > 0;

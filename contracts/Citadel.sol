@@ -29,6 +29,9 @@ contract Citadel is CitadelDaoTransport {
             MultisigData memory ms = multisigs[i];
             _initMultisigWhitelist(ms.id, ms.whitelist, ms.threshold);
         }
+
+        initialSupply = initialSupply.mul(1e6);
+
         _initCitadelInvestors(initialUnbondingPeriod, initialUnbondingPeriodFrequency);
         _initCitadelExchange(_rate, _buyerLimit);
 

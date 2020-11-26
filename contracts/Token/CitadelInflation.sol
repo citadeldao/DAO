@@ -21,27 +21,73 @@ contract CitadelInflation is CitadelCommunityFund {
 
     event CitadelInflationRatio(uint stakingPct, uint vestingPct);
 
+    function yearInflationEmission(uint timestamp) external view
+    returns (uint) {
+        uint lastYears = timestamp.sub(deployDate).div(365 days);
+        (uint yem,) = _inflationEmission(lastYears);
+        return yem;
+    }
+
+    function inflationEmission(uint lastYears) external pure
+    returns (uint year, uint emission) {
+        (year, emission) = _inflationEmission(lastYears);
+    }
+
+    function _inflationEmission(uint lastYears) internal pure
+    returns (uint year, uint emission) {
+        if (lastYears < 1 || lastYears > 22) return (0, 0);
+        uint totalSupply = 1000000000;
+        uint circulatingSupply = 100000000;
+        uint emissionPool = 600000000;
+        // for 22 years
+        for(uint y = 0; y <= lastYears+1; y++){
+            if(y > 0){
+                uint em = 0;
+                year = _countEmission(emissionPool, circulatingSupply);
+                emissionPool -= year;
+                emission += year;
+                //console.log(emission, em);
+                circulatingSupply += year;
+            }
+            if(y == 1) circulatingSupply += 15000000 + 10000000;
+            if(y == 2) circulatingSupply += 22500000 + 15000000;
+            if(y == 3) circulatingSupply += 45000000 + 30000000;
+            if(y == 4) circulatingSupply += 67500000 + 45000000;
+            if(y < 5) circulatingSupply += 10000000;
+        }
+        year = year.mul(1e6);
+        emission = emission.mul(1e6);
+    }
+
+    function _countEmission(uint emissionPool, uint circulatingSupply) private pure
+    returns (uint){
+        if(emissionPool < circulatingSupply * 2 / 100){
+            return emissionPool;
+        }else{
+            // choose max amount
+            uint a = emissionPool / 10;
+            uint b = circulatingSupply * 2 / 100;
+            return a > b ? a : b;
+        }
+    }
+
     function getStakingInfo() external view returns (
         address addr,
         uint pct,
-        uint256 budget,
         uint256 budgeUsed
     ) {
         addr = _addressStaking;
         pct = _stakingPct;
-        budget = _stakingAmount;
         budgeUsed = _stakingUsed;
     }
 
     function getVestingInfo() external view returns (
         address addr,
         uint pct,
-        uint256 budget,
         uint256 budgeUsed
     ) {
         addr = _addressVesting;
         pct = _vestingPct;
-        budget = _vestingAmount;
         budgeUsed = _vestingUsed;
     }
 

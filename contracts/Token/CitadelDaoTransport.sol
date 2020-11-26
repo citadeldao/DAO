@@ -31,8 +31,4 @@ contract CitadelDaoTransport is CitadelTokenLocker {
         _changeInflationRatio(stakingPct, vestingPct);
     }
 
-    function changeVestingRatio(uint value) external onlyDaoContract {
-        _updatedVestingRatio(value);
-    }
-
 }
