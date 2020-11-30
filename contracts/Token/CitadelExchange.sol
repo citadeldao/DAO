@@ -106,9 +106,13 @@ contract CitadelExchange is CitadelToken {
         if (_marketContract != address(0)) {
             ( , uint256 price , , , ) = _getLatestOraclePrice();
             uint256 rate_ = price.mul(_marketRate).div(1e8);
-            return amount.div(rate_);
+            uint256 finalAmount = amount.div(rate_);
+            if (finalAmount > _publicSaleLimit) finalAmount = _publicSaleLimit;
+            return finalAmount;
         } else if (_rate > 0) {
-            return amount.div(_rate);
+            uint256 finalAmount = amount.div(_rate);
+            if (finalAmount > _publicSaleLimit) finalAmount = _publicSaleLimit;
+            return finalAmount;
         }
         revert("CitadelExchange: buying rate cannot be zero");
     }

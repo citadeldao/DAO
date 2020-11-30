@@ -64,6 +64,11 @@ contract CitadelVesting is Ownable {
         return yearEmission * _inflationsPct[_inflationsPct.length-1].value / 100;
     }
 
+    function _yearVestingBudget(uint timestamp, uint pct) internal view returns (uint) {
+        uint yearEmission = _Token.yearInflationEmission(timestamp);
+        return yearEmission * pct / 100;
+    }
+
     function updateInflationPct(uint value) external onlyToken {
         _inflationsPct.push(Option(value, _timestamp()));
     }
@@ -102,7 +107,6 @@ contract CitadelVesting is Ownable {
             uint lastIndexInflation = _inflationsPct.length - 1;
             uint lastIndexSupplyHistory = _totalSupplyHistory.length - 1;
             uint startGas = gasleft();
-            uint updatedDate;
             do {
                 // check next options
                 Option memory nextInflation;
@@ -118,6 +122,7 @@ contract CitadelVesting is Ownable {
                 uint vestInflPct = _inflationsPct[snapshot.indexInflation].value;
                 // save user percent
                 uint userPct = (snapshot.frozen * 1e8 / _totalSupplyHistory[snapshot.indexSupplyHistory].value);
+                //uint userPct = _totalSupplyHistory[snapshot.indexSupplyHistory].value / snapshot.frozen;
                 // calculate
                 if (nextStep == NEXT_NOTHING) {
                     time = _timestamp();
@@ -126,26 +131,29 @@ contract CitadelVesting is Ownable {
                 } else if (nextStep == NEXT_SUPPLY) {
                     snapshot.indexSupplyHistory++;
                 }
-                uint vestInfl = _yearVestingBudget(time) * vestInflPct / 100;
-                updatedDate = time;
+                uint vestInfl = _yearVestingBudget(time, vestInflPct);
                 uint period = time - snapshot.dateUpdate; // seconds
                 snapshot.vested += vestInfl * userPct * period / 365 days / 1e8;
+                //snapshot.vested = userPct;
+                snapshot.dateUpdate = time;
+                // test
+                //break;
                 // check gas limit
                 uint gasUsed = startGas - gasleft();
                 if (gasUsed > 200000 || block.gaslimit - 10000 < gasUsed) break;
             } while (
                 snapshot.indexInflation < lastIndexInflation ||
                 snapshot.indexSupplyHistory < lastIndexSupplyHistory ||
-                updatedDate < _timestamp()
+                snapshot.dateUpdate < _timestamp()
             );
         } else {
             // first staking, just fixing indexes
             snapshot.indexInflation = _inflationsPct.length - 1;
             snapshot.indexSupplyHistory = _totalSupplyHistory.length - 1;
+            snapshot.dateUpdate = _timestamp();
         }
         // final update
         snapshot.frozen = frozenCurrent;
-        snapshot.dateUpdate = _timestamp();
     }
 
     function _findNextStep(
@@ -162,7 +170,7 @@ contract CitadelVesting is Ownable {
             minDate = dateInf;
             lastByte = NEXT_INFLATION;
         }
-        if (dateSup > 0 && dateSup < minDate) {
+        if (dateSup > 0 && (dateSup < minDate || minDate == 0)) {
             minDate = dateSup;
             lastByte = NEXT_SUPPLY;
         }

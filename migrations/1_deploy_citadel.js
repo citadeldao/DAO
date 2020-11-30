@@ -30,7 +30,7 @@ module.exports = async function(deployer) {
             }
         ],
         1000000000, // initialSupply
-        10, // rate eth2token
+        10000000, // rate eth2token
         45000, // buyer limit
         3600,//60 * 60 * 24 * 365 * 4, // initialUnbondingPeriod
         1,//60 * 60 * 24, // initialUnbondingPeriod

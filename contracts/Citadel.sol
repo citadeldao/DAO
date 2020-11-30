@@ -31,6 +31,7 @@ contract Citadel is CitadelDaoTransport {
         }
 
         initialSupply = initialSupply.mul(1e6);
+        _buyerLimit = _buyerLimit.mul(1e6);
 
         _initCitadelInvestors(initialUnbondingPeriod, initialUnbondingPeriodFrequency);
         _initCitadelExchange(_rate, _buyerLimit);

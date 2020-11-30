@@ -35,7 +35,7 @@ contract CitadelInflation is CitadelCommunityFund {
 
     function _inflationEmission(uint lastYears) internal pure
     returns (uint year, uint emission) {
-        if (lastYears < 1 || lastYears > 22) return (0, 0);
+        if (lastYears > 22) return (0, 0);
         uint totalSupply = 1000000000;
         uint circulatingSupply = 100000000;
         uint emissionPool = 600000000;
@@ -74,20 +74,24 @@ contract CitadelInflation is CitadelCommunityFund {
     function getStakingInfo() external view returns (
         address addr,
         uint pct,
+        uint256 budget,
         uint256 budgeUsed
     ) {
         addr = _addressStaking;
         pct = _stakingPct;
+        budget = _stakingAmount;
         budgeUsed = _stakingUsed;
     }
 
     function getVestingInfo() external view returns (
         address addr,
         uint pct,
+        uint256 budget,
         uint256 budgeUsed
     ) {
         addr = _addressVesting;
         pct = _vestingPct;
+        budget = _vestingAmount;
         budgeUsed = _vestingUsed;
     }
 
