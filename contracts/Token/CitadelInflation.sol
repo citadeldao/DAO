@@ -23,7 +23,9 @@ contract CitadelInflation is CitadelCommunityFund {
 
     function yearInflationEmission(uint timestamp) external view
     returns (uint) {
-        uint lastYears = timestamp.sub(deployDate).div(365 days);
+        uint lastYears = timestamp.sub(deployDate).mul(1e10).div(365 days);
+        if (lastYears > 0 && lastYears % 1e10 == 0) lastYears = lastYears.sub(1e9);
+        lastYears = lastYears.div(1e10);
         (uint yem,) = _inflationEmission(lastYears);
         return yem;
     }
@@ -36,17 +38,14 @@ contract CitadelInflation is CitadelCommunityFund {
     function _inflationEmission(uint lastYears) internal pure
     returns (uint year, uint emission) {
         if (lastYears > 22) return (0, 0);
-        uint totalSupply = 1000000000;
         uint circulatingSupply = 100000000;
         uint emissionPool = 600000000;
         // for 22 years
         for(uint y = 0; y <= lastYears+1; y++){
             if(y > 0){
-                uint em = 0;
                 year = _countEmission(emissionPool, circulatingSupply);
                 emissionPool -= year;
                 emission += year;
-                //console.log(emission, em);
                 circulatingSupply += year;
             }
             if(y == 1) circulatingSupply += 15000000 + 10000000;

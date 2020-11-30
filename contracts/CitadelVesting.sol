@@ -8,6 +8,7 @@ import "./ICitadelVestingTransport.sol";
 contract CitadelVesting is Ownable {
 
     ICitadelVestingTransport private _Token;
+    uint private _tokenDeployed;
     bool private _isTest;
     uint private _testTimestamp;
 
@@ -44,6 +45,7 @@ contract CitadelVesting is Ownable {
         bool isTest_
     ) public {
         _Token = ICitadelVestingTransport(addressOfToken);
+        _tokenDeployed = _Token.deployed();
         ( , uint inflationPct, , ) = _Token.getVestingInfo();
         _inflationsPct.push(Option(inflationPct, block.timestamp));
         _totalSupplyHistory.push(Option(0, block.timestamp));
@@ -118,14 +120,16 @@ contract CitadelVesting is Ownable {
                     nextSupply = _totalSupplyHistory[snapshot.indexSupplyHistory + 1];
                 }
                 (byte nextStep, uint time) = _findNextStep(nextInflation, nextSupply);
+                if (nextStep == NEXT_NOTHING) time = _timestamp();
+                // check new year
+                uint happyNewYear = _tokenDeployed + ((snapshot.dateUpdate - _tokenDeployed) / 365 days + 1) * 365 days;
                 // save vesting inflation
                 uint vestInflPct = _inflationsPct[snapshot.indexInflation].value;
                 // save user percent
-                uint userPct = (snapshot.frozen * 1e8 / _totalSupplyHistory[snapshot.indexSupplyHistory].value);
-                //uint userPct = _totalSupplyHistory[snapshot.indexSupplyHistory].value / snapshot.frozen;
+                uint userPct = (snapshot.frozen * 1e15 / _totalSupplyHistory[snapshot.indexSupplyHistory].value);
                 // calculate
-                if (nextStep == NEXT_NOTHING) {
-                    time = _timestamp();
+                if (happyNewYear < time) {
+                    time = happyNewYear;
                 } else if (nextStep == NEXT_INFLATION) {
                     snapshot.indexInflation++;
                 } else if (nextStep == NEXT_SUPPLY) {
@@ -133,11 +137,8 @@ contract CitadelVesting is Ownable {
                 }
                 uint vestInfl = _yearVestingBudget(time, vestInflPct);
                 uint period = time - snapshot.dateUpdate; // seconds
-                snapshot.vested += vestInfl * userPct * period / 365 days / 1e8;
-                //snapshot.vested = userPct;
+                snapshot.vested += vestInfl * userPct * period / 365 days / 1e15;
                 snapshot.dateUpdate = time;
-                // test
-                //break;
                 // check gas limit
                 uint gasUsed = startGas - gasleft();
                 if (gasUsed > 200000 || block.gaslimit - 10000 < gasUsed) break;

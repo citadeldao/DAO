@@ -21,6 +21,10 @@ contract CitadelToken is ERC20("Citadel", "XCT"), Ownable, Pausable, Multisig {
 
     }
 
+    function deployed() external view returns (uint) {
+        return deployDate;
+    }
+
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
 

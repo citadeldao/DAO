@@ -13,9 +13,13 @@ contract("CitadelVesting", function(accounts){
     it("lock coins to get some vote power", async function(){
         // set start timestamp
         const VestingInstance = await CitadelVesting.deployed();
-        await VestingInstance.setTestTimestamp.sendTransaction(start);
         // stake token
         const TokenInstance = await Citadel.deployed();
+
+        const deployedTime = (await TokenInstance.deployed.call()).toNumber();
+        start = deployedTime;
+        await VestingInstance.setTestTimestamp.sendTransaction(start);
+
         tokenMultiplier = 10 ** (await TokenInstance.decimals.call()).toNumber();
         const sendEth = new BN(1e18);
         const boughtTokens = await TokenInstance.calculateTokensEther.call(sendEth);
@@ -70,7 +74,7 @@ contract("CitadelVesting", function(accounts){
         const VestingInstance = await CitadelVesting.deployed();
         await VestingInstance.setTestTimestamp.sendTransaction(start + 7467);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '1136.53'
@@ -83,7 +87,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 11967);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '1707.31'
@@ -96,7 +100,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 16287);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '2176.97'
@@ -109,7 +113,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 19817);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '2512.78'
@@ -122,7 +126,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 27417);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '3155.43'
@@ -135,7 +139,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 32417);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '3535.95'
@@ -149,7 +153,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(50 * tokenMultiplier);
         await VestingInstance.setTestTimestamp.sendTransaction(start + 41651);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '4590.06'
@@ -162,7 +166,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 43997);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '4833.52'
@@ -175,7 +179,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 46354);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '5057.74'
@@ -189,7 +193,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(50 * tokenMultiplier);
         await VestingInstance.setTestTimestamp.sendTransaction(start + 60919);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '6905.15'
@@ -202,7 +206,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.unlockCoins.sendTransaction(200 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 69765);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '8251.58'
@@ -215,7 +219,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 73311);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '8742.24'
@@ -228,7 +232,7 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.unlockCoins.sendTransaction(100 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 78045);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '9462.78'
@@ -241,30 +245,72 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.lockCoins.sendTransaction(200 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 81045);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '9843.30'
         )
     })
 
-    it("availableVestOf - period 15", async function(){
+    it("availableVestOf - period 15 (1 day)", async function(){
         const TokenInstance = await Citadel.deployed();
         const VestingInstance = await CitadelVesting.deployed();
         await TokenInstance.lockCoins.sendTransaction(200 * tokenMultiplier, {from: accounts[1]});
         await VestingInstance.setTestTimestamp.sendTransaction(start + 86400);
         let amount = await VestingInstance.availableVestOf.call(accounts[0]);
-        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        //console.log(new BN(amount).toNumber());
         assert.equal(
             new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
             '10425.49'
         )
     })
 
-    /*
-    it("updateInflation", async function(){
-
+    it("availableVestOf - period 16 (2 days)", async function(){
+        const TokenInstance = await Citadel.deployed();
+        const VestingInstance = await CitadelVesting.deployed();
+        await VestingInstance.setTestTimestamp.sendTransaction(start + 172800);
+        let amount = await VestingInstance.availableVestOf.call(accounts[0]);
+        //console.log(new BN(amount).toNumber());
+        assert.equal(
+            new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
+            '19818.84'
+        )
     })
-    */
+
+    it("availableVestOf - period 17 (182 days)", async function(){
+        const TokenInstance = await Citadel.deployed();
+        const VestingInstance = await CitadelVesting.deployed();
+        await VestingInstance.setTestTimestamp.sendTransaction(start + 15_724_800);
+        let amount = await VestingInstance.availableVestOf.call(accounts[0]);
+        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        assert.equal(
+            new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
+            '1710621.19'
+        )
+    })
+
+    it("availableVestOf - period 18 (365 days)", async function(){
+        const TokenInstance = await Citadel.deployed();
+        const VestingInstance = await CitadelVesting.deployed();
+        await VestingInstance.setTestTimestamp.sendTransaction(start + 31_536_000);
+        let amount = await VestingInstance.availableVestOf.call(accounts[0]);
+        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        assert.equal(
+            new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
+            '3429603.58'
+        )
+    })
+
+    it("availableVestOf - period 19X (second year)", async function(){
+        const TokenInstance = await Citadel.deployed();
+        const VestingInstance = await CitadelVesting.deployed();
+        await VestingInstance.setTestTimestamp.sendTransaction(start + 31_622_400);
+        let amount = await VestingInstance.availableVestOf.call(accounts[0]);
+        //console.log(new BN(amount)/*.dividedBy(tokenMultiplier)*/.toNumber());
+        assert.equal(
+            new BN(amount).dividedBy(tokenMultiplier).toFixed(2),
+            '3438057.59'
+        )
+    })
 
 })
