@@ -23,7 +23,7 @@ contract("CitadelVesting", function(accounts){
         tokenMultiplier = 10 ** (await TokenInstance.decimals.call()).toNumber();
         const sendEth = new BN(1e18);
         const boughtTokens = await TokenInstance.calculateTokensEther.call(sendEth);
-        console.log(new BN(boughtTokens).dividedBy(tokenMultiplier).toNumber());
+        // console.log(new BN(boughtTokens).dividedBy(tokenMultiplier).toNumber());
         // 10000 Eth = 1000 XCT
         // buy some coins
         await web3.eth.sendTransaction({

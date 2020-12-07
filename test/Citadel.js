@@ -1,11 +1,12 @@
 const BN = require('bignumber.js');
 const Citadel = artifacts.require("Citadel");
 
-const totalSupply = 150000000;
+const tokenMultiplier = 1e6;
+const totalSupply = 1000000000 * tokenMultiplier;
 const unbondingPeriod = 3600;//60 * 60 * 24 * 365 * 4;
 const unbondingPeriodFrequency = 1;//60 * 60 * 24;
-const buyerLimit = 45000;
-const rate = 10;
+const buyerLimit = 45000 * tokenMultiplier;
+const rate = 10000000;
 
 contract('Citadel', function(accounts){
 
@@ -28,7 +29,7 @@ contract('Citadel', function(accounts){
     it("Total supply", async function() {
         const instance = await Citadel.deployed();
         assert.equal(
-            await instance.totalSupply.call(),
+            (await instance.totalSupply.call()).toNumber(),
             totalSupply
         )
     })
@@ -566,39 +567,6 @@ contract('CitadelExchange', function(accounts){
         assert(false);
 
     })
-
-    /*it("Sell token", async function() {
-
-        const amount = 100;
-        const value = 50;
-
-        const instance = await Citadel.deployed();
-
-        assert.equal(
-            (await instance.balanceOf.call(accounts[3])).toNumber(),
-            amount,
-            "Unexpected amount of tokens before selling"
-        );
-
-        await web3.eth.sendTransaction({
-            ...(await instance.withdrawalFunds.request(value)),
-            from: accounts[3],
-            to: Citadel.address
-        })
-
-        assert.equal(
-            (await instance.balanceOf.call(accounts[3])).toNumber(),
-            amount-value,
-            "Unexpected amount of tokens after selling"
-        );
-
-        assert.equal(
-            await web3.eth.getBalance(Citadel.address),
-            amount-value,
-            "Unexpected balance of contract"
-        )
-
-    })*/
 
 })
 

@@ -112,10 +112,10 @@ contract CitadelInflation is CitadelCommunityFund {
         _vestingPct = vestingPct;
         _vestingAmount = vestingAmount;
         emit CitadelInflationRatio(stakingPct, vestingPct);
-        _updatedInflationRatio(stakingAmount, vestingAmount);
+        _updatedInflationRatio(vestingPct);
     }
 
-    function _updatedInflationRatio(uint stakingAmount, uint vestingAmount) internal virtual { }
+    function _updatedInflationRatio(uint vestingAmount) internal virtual { }
 
     function _transferStakingRewards(address account, uint256 amount) internal {
         _stakingUsed = _stakingUsed.add(amount);
