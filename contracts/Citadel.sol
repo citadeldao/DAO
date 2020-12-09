@@ -49,7 +49,7 @@ contract Citadel is CitadelDaoTransport {
 
         value = initialSupply.mul(10).div(100);
         publicSaleLimit = publicSaleLimit.sub(value);
-        _initInvestors(address(7), value, _teamUnlockPct); // minted
+        _initInvestors(address(7), value, _investorsUnlockPct); // minted
 
         value = initialSupply.mul(5).div(100);
         publicSaleLimit = publicSaleLimit.sub(value);

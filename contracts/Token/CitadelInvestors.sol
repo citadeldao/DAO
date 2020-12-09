@@ -6,27 +6,11 @@ import "./CitadelExchange.sol";
 
 contract CitadelInvestors is CitadelExchange {
 
-    struct Investor {
-        uint256 limit;
-        uint256 used;
-        uint percent;
-    }
-
     struct Person {
         uint limit;
         uint used;
         uint percent;
     }
-
-    event InvestorAdded(address account, uint shares);
-
-    bool private _isInitialized;
-    uint public unbondingPeriod;
-    uint public unbondingPeriodFrequency;
-    uint256 private _totalAmount;
-    uint256 private _usedAmount;
-    address[] private _addresses;
-    mapping (address => Investor) public investors;
 
     address private _addressTeam;
     uint private _totalTeam;
@@ -50,7 +34,7 @@ contract CitadelInvestors is CitadelExchange {
             require(amount > 0);
             require(_team[persons[i]].limit == 0);
             countTotal = countTotal.add(amount);
-            _team[persons[i]] = Person(amount, 0, amount.mul(1000).div(_totalTeam));
+            _team[persons[i]] = Person(amount, 0, amount.mul(percentDecimal).div(_totalTeam));
         }
         require(countTotal == _totalTeam, "CitadelInvestors: total amount must be equal team part");
     }
@@ -65,167 +49,83 @@ contract CitadelInvestors is CitadelExchange {
             require(amount > 0);
             require(_investors[persons[i]].limit == 0);
             countTotal = countTotal.add(amount);
-            _investors[persons[i]] = Person(amount, 0, amount.mul(1000).div(_totalInvestors));
+            _investors[persons[i]] = Person(amount, 0, amount.mul(percentDecimal).div(_totalInvestors));
         }
         require(countTotal == _totalInvestors, "CitadelInvestors: total amount must be equal team part");
     }
 
-    function _initCitadelInvestors (
-        uint initialUnbondingPeriod,
-        uint initialUnbondingPeriodFrequency
-    )
-    internal {
-        require(!_isInitialized);
-        _isInitialized = true;
-        unbondingPeriod = initialUnbondingPeriod;
-        unbondingPeriodFrequency = initialUnbondingPeriodFrequency;
+    function claimTeam (uint256 amount) external {
+        address account = msg.sender;
+        require(_team[account].limit > 0, "CitadelInvestors: team only");
+
+        uint available = _getAvailableSum(_team[account], _totalTeam, _stagesTeam);
+
+        require(amount <= available, "CitadelInvestors: too big amount");
+
+        _team[account].used = _team[account].used.add(amount);
+        require(_team[account].used <= _team[account].limit);
+
+        _transfer(_addressTeam, account, amount);
     }
 
     function claimInvestor (uint256 amount) external {
         address account = msg.sender;
-        require(investors[account].limit > 0, "CitadelInvestors: for investors only");
+        require(_investors[account].limit > 0, "CitadelInvestors: investor only");
 
-        (
-            ,
-            ,
-            ,
-            ,
-            ,
-            uint256 available
-        ) = _getInvestorInfoOf(account);
+        uint available = _getAvailableSum(_investors[account], _totalInvestors, _stagesInvestors);
 
         require(amount <= available, "CitadelInvestors: too big amount");
 
-        uint256 used = investors[account].used.add(amount);
-        require(used <= investors[account].limit);
+        _investors[account].used = _investors[account].used.add(amount);
+        require(_investors[account].used <= _investors[account].limit);
 
-        investors[account].used = used;
-        _usedAmount = _usedAmount.add(amount);
-        _transfer(_bankAddress, account, amount);
+        _transfer(_addressInvestors, account, amount);
     }
 
-    function getInvestorPercent () public view returns (uint256) {
-        require(investors[msg.sender].limit > 0, "CitadelInvestors: for investors only");
-        return investors[msg.sender].percent;
-    }
-
-    function getInvestorLimit () public view returns (uint256) {
-        require(investors[msg.sender].limit > 0, "CitadelInvestors: for investors only");
-        return investors[msg.sender].limit;
-    }
-
-    function getInvestorUsed () public view returns (uint256) {
-        require(investors[msg.sender].limit > 0, "CitadelInvestors: for investors only");
-        return investors[msg.sender].used;
-    }
-
-    function getInvestorInfo () public view
+    function getTeamInfoOf (address addr) external view
     returns (
-        uint hasTime,
-        uint steps,
-        uint256 limit,
-        uint256 stepPrice,
-        uint currentSteps,
-        uint256 available
+        uint limit,
+        uint used,
+        uint available,
+        uint percent
     ) {
-        (
-            hasTime,
-            steps,
-            limit,
-            stepPrice,
-            currentSteps,
-            available
-        ) = _getInvestorInfoOf(msg.sender);
+        limit = _team[addr].limit;
+        used = _team[addr].used;
+        percent = _team[addr].percent;
+        available = _getAvailableSum(_team[addr], _totalTeam, _stagesTeam);
     }
 
-    function getAvailableInvestorSumOf (address account) public view
-    returns (uint256) {
-
-        require(investors[msg.sender].limit > 0, "CitadelInvestors: for investors only");
-
-        (
-            ,
-            ,
-            ,
-            ,
-            ,
-            uint256 available
-        ) = _getInvestorInfoOf(account);
-
-        return available;
-
-    }
-
-    function _getInvestorInfoOf (address account) internal view
+    function getInvestorInfoOf (address addr) external view
     returns (
-        uint hasTime,
-        uint steps,
-        uint256 limit,
-        uint256 stepPrice,
-        uint currentSteps,
-        uint256 available
+        uint limit,
+        uint used,
+        uint available,
+        uint percent
     ) {
-        require(
-            block.timestamp != deployDate,
-            "CitadelInvestors: block timestamp must be different from start time"
-        );
-        require(investors[account].limit > 0, "CitadelInvestors: for investors only");
+        limit = _investors[addr].limit;
+        used = _investors[addr].used;
+        percent = _investors[addr].percent;
+        available = _getAvailableSum(_investors[addr], _totalInvestors, _stagesInvestors);
+    }
 
-        hasTime = block.timestamp - deployDate;
-        steps = unbondingPeriod / unbondingPeriodFrequency;
-        limit = investors[account].limit;
-        stepPrice = investors[account].limit.div(steps);
-        currentSteps = hasTime / unbondingPeriodFrequency;
-        if (currentSteps > steps) currentSteps = steps;
-        available = stepPrice.mul(currentSteps).sub(investors[account].used);
-
-        if (currentSteps == steps) {
-            uint256 finalCheck = investors[account].used.add(available);
-            if (finalCheck < investors[account].limit) {
-                available = investors[account].limit.sub(investors[account].used);
+    function _getAvailableSum (Person memory person, uint totalBudget, uint[] memory stages) private view
+    returns (uint) {
+        uint lastYears = _lifeYears(block.timestamp);
+        uint total = totalBudget;
+        if (stages.length > lastYears) {
+            uint index = lastYears > 0 ? lastYears - 1 : 0;
+            total = totalBudget.mul(stages[index]).div(100);
+            if (lastYears > 0) {
+                uint more = totalBudget.mul(stages[lastYears]).div(100).sub(total);
+                more = more.mul((block.timestamp - deployDate) % 365 days).div(365 days);
+                total = total.add(more);
+            } else {
+                total = total.mul((block.timestamp - deployDate) % 365 days).div(365 days);
             }
         }
-    }
-
-    function _addInvestors (
-        uint256 totalAmount,
-        address[] memory addresses,
-        uint[] memory shares
-    ) internal returns (bool) {
-
-        require(totalAmount > 0, "CitadelInvestors: no totalAmount");
-        require(addresses.length == shares.length, "CitadelInvestors: addresses and shares length mismatch");
-        require(addresses.length > 0, "CitadelInvestors: no addresses");
-
-        _totalAmount = totalAmount;
-
-        uint totalShares = 0;
-        uint256 bank = 0;
-
-        for (uint i = 0; i < addresses.length; i++) {
-            require(shares[i] > 0, "CitadelInvestors: investor share must be rather than 0");
-            require(addresses[i] != address(0), "CitadelInvestors: investor address cannot be zero");
-
-            _addresses.push(addresses[i]);
-            uint256 investorAmount = totalAmount.mul(shares[i]).div(100);
-            investors[addresses[i]] = Investor(investorAmount, 0, shares[i]);
-            emit InvestorAdded(addresses[i], shares[i]);
-            totalShares += shares[i];
-            bank += investorAmount;
-        }
-
-        require(totalShares == 100, "CitadelInvestors: shares sum have to be equal 100 percentages");
-
-        if (bank > totalAmount) {
-            uint256 diff = bank.sub(totalAmount);
-            investors[addresses[addresses.length - 1]].limit -= diff;
-        } else if (bank < totalAmount) {
-            uint256 diff = totalAmount.sub(bank);
-            investors[addresses[addresses.length - 1]].limit += diff;
-        }
-
-        return true;
-
+        total = total.mul(person.percent).div(percentDecimal);
+        if (total > person.limit) total = person.limit;
+        return total.sub(person.used);
     }
 
     function _initTeam(address addr, uint amount, uint[] memory stages) internal {
