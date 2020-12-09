@@ -5,7 +5,6 @@ import "./CitadelExchange.sol";
 
 
 contract CitadelInvestors is CitadelExchange {
-    using SafeMath for uint256;
 
     struct Investor {
         uint256 limit;
@@ -13,16 +12,63 @@ contract CitadelInvestors is CitadelExchange {
         uint percent;
     }
 
+    struct Person {
+        uint limit;
+        uint used;
+        uint percent;
+    }
+
     event InvestorAdded(address account, uint shares);
 
     bool private _isInitialized;
-    uint public startContract;
     uint public unbondingPeriod;
     uint public unbondingPeriodFrequency;
     uint256 private _totalAmount;
     uint256 private _usedAmount;
     address[] private _addresses;
     mapping (address => Investor) public investors;
+
+    address private _addressTeam;
+    uint private _totalTeam;
+    uint[] private _stagesTeam;
+    bool private _setTeam;
+    mapping (address => Person) private _team;
+
+    address private _addressInvestors;
+    uint private _totalInvestors;
+    uint[] private _stagesInvestors;
+    bool private _setInvestors;
+    mapping (address => Person) private _investors;
+
+    function setTeam(address[] calldata persons, uint[] calldata amounts) external onlyOwner {
+        require(!_setTeam);
+        _setTeam = true;
+        require(persons.length == amounts.length);
+        uint countTotal;
+        for (uint i = 0; i < persons.length; i++) {
+            uint amount = amounts[i];
+            require(amount > 0);
+            require(_team[persons[i]].limit == 0);
+            countTotal = countTotal.add(amount);
+            _team[persons[i]] = Person(amount, 0, amount.mul(1000).div(_totalTeam));
+        }
+        require(countTotal == _totalTeam, "CitadelInvestors: total amount must be equal team part");
+    }
+
+    function setInvestors(address[] calldata persons, uint[] calldata amounts) external onlyOwner {
+        require(!_setInvestors);
+        _setInvestors = true;
+        require(persons.length == amounts.length);
+        uint countTotal;
+        for (uint i = 0; i < persons.length; i++) {
+            uint amount = amounts[i];
+            require(amount > 0);
+            require(_investors[persons[i]].limit == 0);
+            countTotal = countTotal.add(amount);
+            _investors[persons[i]] = Person(amount, 0, amount.mul(1000).div(_totalInvestors));
+        }
+        require(countTotal == _totalInvestors, "CitadelInvestors: total amount must be equal team part");
+    }
 
     function _initCitadelInvestors (
         uint initialUnbondingPeriod,
@@ -31,7 +77,6 @@ contract CitadelInvestors is CitadelExchange {
     internal {
         require(!_isInitialized);
         _isInitialized = true;
-        startContract = block.timestamp;
         unbondingPeriod = initialUnbondingPeriod;
         unbondingPeriodFrequency = initialUnbondingPeriodFrequency;
     }
@@ -121,12 +166,12 @@ contract CitadelInvestors is CitadelExchange {
         uint256 available
     ) {
         require(
-            block.timestamp != startContract,
+            block.timestamp != deployDate,
             "CitadelInvestors: block timestamp must be different from start time"
         );
         require(investors[account].limit > 0, "CitadelInvestors: for investors only");
 
-        hasTime = block.timestamp - startContract;
+        hasTime = block.timestamp - deployDate;
         steps = unbondingPeriod / unbondingPeriodFrequency;
         limit = investors[account].limit;
         stepPrice = investors[account].limit.div(steps);
@@ -181,6 +226,22 @@ contract CitadelInvestors is CitadelExchange {
 
         return true;
 
+    }
+
+    function _initTeam(address addr, uint amount, uint[] memory stages) internal {
+        require(_totalTeam == 0);
+        _addressTeam = addr;
+        _totalTeam = amount;
+        _stagesTeam = stages;
+        _mint(addr, amount);
+    }
+
+    function _initInvestors(address addr, uint amount, uint[] memory stages) internal {
+        require(_totalInvestors == 0);
+        _addressInvestors = addr;
+        _totalInvestors = amount;
+        _stagesInvestors = stages;
+        _mint(addr, amount);
     }
 
 }

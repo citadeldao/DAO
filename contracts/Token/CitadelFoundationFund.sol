@@ -14,7 +14,6 @@ contract CitadelFoundationFund is CitadelInvestors {
     uint private _stepsTotal;
     uint256 private _stepPrice;
     uint private _stepPeriod;
-    uint private _startTime;
 
     function getFFInfo() external view multisig(bytes4("FF")) returns (
         address addr,
@@ -26,7 +25,7 @@ contract CitadelFoundationFund is CitadelInvestors {
         uint256 available
     ) {
         addr = _addressFF;
-        startDate = _startTime;
+        startDate = deployDate;
         budget = _budget;
         badgeUsed = _budgetUsed;
         badgeClaimed = _budgetClaimed;
@@ -67,17 +66,16 @@ contract CitadelFoundationFund is CitadelInvestors {
         require(budget > 0, "CitadelFoundationFund: empty budget");
 
         _isInitialized = true;
-        _startTime = block.timestamp;
         _addressFF = addr;
         _budget = budget;
-        _stepsTotal = 5;
+        _stepsTotal = 4;
         _stepPrice = budget.div(_stepsTotal);
         _stepPeriod = 365 days;
 
     }
 
     function countSteps() private view returns (uint) {
-        uint diff = block.timestamp - _startTime;
+        uint diff = block.timestamp - deployDate;
         uint steps = diff / _stepPeriod;
         if (steps >= _stepsTotal) {
             return _stepsTotal;

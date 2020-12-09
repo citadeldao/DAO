@@ -19,6 +19,14 @@ contract CitadelInflation is CitadelCommunityFund {
     uint private _vestingAmount;
     uint256 private _vestingUsed;
 
+    struct InflationValues {
+        uint stakingPct;
+        uint vestingPct;
+        uint date;
+    }
+
+    InflationValues[] private _inflationHistory;
+
     event CitadelInflationRatio(uint stakingPct, uint vestingPct);
 
     function yearInflationEmission(uint timestamp) external view
@@ -70,6 +78,23 @@ contract CitadelInflation is CitadelCommunityFund {
         }
     }
 
+    function inflationPoint(uint index) external view
+    returns (
+        uint stakingPct,
+        uint vestingPct,
+        uint date
+    ) {
+        require(index < _inflationHistory.length, "CitadelInflation: unexpected index");
+        stakingPct = _inflationHistory[index].stakingPct;
+        vestingPct = _inflationHistory[index].vestingPct;
+        date = _inflationHistory[index].date;
+    }
+
+    function countInflationPoints() external view
+    returns (uint) {
+        return _inflationHistory.length;
+    }
+
     function getStakingInfo() external view returns (
         address addr,
         uint pct,
@@ -112,6 +137,7 @@ contract CitadelInflation is CitadelCommunityFund {
         _vestingPct = vestingPct;
         _vestingAmount = vestingAmount;
         emit CitadelInflationRatio(stakingPct, vestingPct);
+        _inflationHistory.push(InflationValues(stakingPct, vestingPct, block.timestamp));
         _updatedInflationRatio(vestingPct);
     }
 
@@ -155,6 +181,7 @@ contract CitadelInflation is CitadelCommunityFund {
         if(_vestingAmount > 0) _transfer(_bankAddress, _addressVesting, _vestingAmount);
 
         emit CitadelInflationRatio(stakingPct, vestingPct);
+        _inflationHistory.push(InflationValues(stakingPct, vestingPct, block.timestamp));
 
     }
 
