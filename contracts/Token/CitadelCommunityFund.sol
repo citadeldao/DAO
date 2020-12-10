@@ -38,7 +38,6 @@ contract CitadelCommunityFund is CitadelFoundationFund {
         _isInitialized = true;
         _addressCF = addr;
         _budget = budget;
-        _transfer(_bankAddress, _addressCF, _budget);
 
     }
 

@@ -29,21 +29,38 @@ module.exports = async function(deployer) {
                 threshold: 2
             }
         ],
-        150000000, // initialSupply
-        10, // rate eth2token
+        1000000000, // initialSupply
+        10000000, // rate eth2token
         45000, // buyer limit
-        3600,//60 * 60 * 24 * 365 * 4, // initialUnbondingPeriod
-        1,//60 * 60 * 24, // initialUnbondingPeriod
-        [ // _payees
-            '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
-            '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61'
+        [ // team unlock
+            10,
+            35,
+            65,
+            100
         ],
-        [ // _shares
-            50,
-            50
+        [ // private unlock
+            15,
+            35,
+            65,
+            100
         ]
-    ).then(function(instance){
+    ).then(async function(instance){
         TokenInstance = instance;
+
+        await TokenInstance.setTeam.sendTransaction([
+            '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
+            '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
+        ], [
+            90000000 * 1e6,
+            60000000 * 1e6,
+        ]);
+
+        await TokenInstance.setInvestors.sendTransaction([
+            '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
+        ], [
+            100000000 * 1e6
+        ]);
+
         return deployer.deploy(
             CitadelDao,
             TokenInstance.address
@@ -56,7 +73,7 @@ module.exports = async function(deployer) {
         return deployer.deploy(
             CitadelVesting,
             TokenInstance.address,
-            0.4 * 1e8
+            true
         );
     }).then(async function(instance){
         VestingInstance = instance;

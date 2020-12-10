@@ -4,6 +4,8 @@ pragma solidity 0.6.2;
 
 interface ICitadelVestingTransport {
 
+    function deployed() external view returns (uint);
+
     function lockedBalanceOf(address account) external view returns (uint256);
     function lockedSupply() external view returns (uint256);
 
@@ -13,5 +15,6 @@ interface ICitadelVestingTransport {
         uint256 budget,
         uint256 budgeUsed
     );
+    function yearInflationEmission(uint timestamp) external view returns (uint);
 
 }

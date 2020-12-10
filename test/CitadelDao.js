@@ -8,6 +8,9 @@ const CitadelVesting = artifacts.require("CitadelVesting");
 
 const ADMIN_ROLE = keccak256('ADMIN_ROLE');
 
+const tokenMultiplier = 1e6;
+const rate = 10000000;
+
 function keccak256(str){
     return createKeccakHash('keccak256').update(str).digest();
 }
@@ -57,7 +60,7 @@ contract('CitadelDao Voting', function(accounts){
 
     it("lock coins to get some vote power", async function(){
         const CitadelTokenInstance = await Citadel.deployed();
-        const sendEth = 10000;
+        const sendEth = 1000 * rate;
         const boughtTokens = await CitadelTokenInstance.calculateTokensEther.call(sendEth);
         // 10000 Eth = 1000 XCT
         // buy some coins
@@ -332,7 +335,7 @@ contract('CitadelDao Voting (Updater)', function(accounts){
 
     it("lock coins to get some vote power", async function(){
         const CitadelTokenInstance = await Citadel.deployed();
-        const sendEth = 10000;
+        const sendEth = 1000 * rate;
         const boughtTokens = await CitadelTokenInstance.calculateTokensEther.call(sendEth);
         // 10000 Eth = 1000 XCT
         // buy some coins
@@ -406,52 +409,7 @@ contract('CitadelDao Voting (Updater)', function(accounts){
         );
     })
 
-    it("create updater vesting", async function(){
-        const instance = await CitadelDao.deployed();
-        await instance.addAdmin.sendTransaction(accounts[0]);
-        expiryTime = parseInt(new Date().getTime() / 1000 + 2);
-        await instance.newProposal.sendTransaction(
-            title,
-            description,
-            expiryTime,
-            2, // update vesting
-            parseInt(0.6 * 1e8).toString() // 50 for staking + 50 for vesting
-        );
-    })
-
-    it("vote for updater vesting", async function(){
-        const instance = await CitadelDao.deployed();
-        let proposal = await instance.getNewestProposal.call();
-        await instance.vote.sendTransaction(proposal.issueId, 1);
-        await new Promise(next => setTimeout(next, 2000 + expiryTime * 1000 - new Date().getTime()));
-        let result = await instance.proposalInfo.call(proposal.issueId);
-        assert.equal(
-            result.hasQuorum,
-            true,
-            'hasQuorum'
-        );
-        assert.equal(
-            result.accepted,
-            true,
-            'accepted'
-        );
-    })
-
-    it("execute updater vesting", async function(){
-        const instance = await CitadelDao.deployed();
-        let proposal = await instance.getNewestProposal.call();
-        await instance.execProposal.sendTransaction(proposal.issueId);
-    })
-
-    it("check updated vesting", async function(){
-        const instance = await CitadelVesting.deployed();
-        assert.equal(
-            (await instance.getVestingRatio.call()).toNumber(),
-            parseInt(0.6 * 1e8)
-        );
-    })
-
-    it("create updater vesting (multi)", async function(){
+    it("create updater inflation (multi)", async function(){
         const instance = await CitadelDao.deployed();
         await instance.addAdmin.sendTransaction(accounts[0]);
         expiryTime = parseInt(new Date().getTime() / 1000 + 2);
@@ -460,17 +418,17 @@ contract('CitadelDao Voting (Updater)', function(accounts){
             description,
             expiryTime,
             [
-                parseInt(0.4 * 1e8).toString(),
-                parseInt(0.5 * 1e8).toString(),
-                parseInt(0.6 * 1e8).toString(),
-                parseInt(0.7 * 1e8).toString(),
-                parseInt(0.8 * 1e8).toString(),
+                (10*1000+90).toString(),
+                (30*1000+70).toString(),
+                (50*1000+50).toString(),
+                (70*1000+30).toString(),
+                (90*1000+10).toString(),
             ],
-            2, // update vesting
+            1, // update inflation
         );
     })
 
-    it("vote for updater vesting (multi)", async function(){
+    it("vote for updater inflation (multi)", async function(){
         const instance = await CitadelDao.deployed();
         let proposal = await instance.getNewestProposal.call();
         await instance.vote.sendTransaction(proposal.issueId, 1);
@@ -489,12 +447,13 @@ contract('CitadelDao Voting (Updater)', function(accounts){
         let tie = false;
         for(let i = 0; i < countOptions; i++){
             let option = await instance.optionInfo.call(proposal.issueId, i);
-            totalWeight += option.weight;
-            if(option.weight > maxWeight){
+            let weight = option.weight.toNumber();
+            totalWeight += weight;
+            if(weight > maxWeight){
                 maxIndex = i;
-                maxWeight = option.weight;
+                maxWeight = weight;
                 tie = false;
-            } else if (option.weight == maxWeight) {
+            } else if (weight == maxWeight) {
                 tie = true;
             }
         }
@@ -508,25 +467,34 @@ contract('CitadelDao Voting (Updater)', function(accounts){
             1,
             'chosenOption'
         );
-        console.log(maxWeight * 100000 / totalWeight);
+        const curWeight = maxWeight * 100000 / totalWeight;
+        const supportPct = config.supportPct.toNumber();
         assert.equal(
-            maxWeight * 100000 / totalWeight >= config.supportPct,
+            curWeight >= supportPct,
             true,
             'accepted'
         );
     })
 
-    it("execute updater vesting (multi)", async function(){
+    it("execute updater inflation (multi)", async function(){
         const instance = await CitadelDao.deployed();
         let proposal = await instance.getNewestProposal.call();
         await instance.execProposal.sendTransaction(proposal.issueId);
     })
 
-    it("check updated vesting (multi)", async function(){
-        const instance = await CitadelVesting.deployed();
+    it("check updated inflation (multi)", async function(){
+        const instance = await Citadel.deployed();
+        let staking = await instance.getStakingInfo.call();
+        let vesting = await instance.getVestingInfo.call();
         assert.equal(
-            (await instance.getVestingRatio.call()).toNumber(),
-            parseInt(0.5 * 1e8)
+            staking.pct.toNumber(),
+            30,
+            'staking'
+        );
+        assert.equal(
+            vesting.pct.toNumber(),
+            70,
+            'vesting'
         );
     })
 
@@ -538,7 +506,7 @@ contract('CitadelDao Voting (Updater)', function(accounts){
             title,
             description,
             expiryTime,
-            3, // update minimum to create proposal
+            2, // update minimum to create proposal
             '500' // 500 frozen coins to create proposal
         );
     })
@@ -583,7 +551,7 @@ contract('CitadelDao Voting (Updater)', function(accounts){
             title,
             description,
             expiryTime,
-            4, // update minimum to create proposal
+            3, // update minimum to create proposal
             '1070000060000' // 500 frozen coins to create proposal
         );
     })

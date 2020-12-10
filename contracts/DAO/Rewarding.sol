@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import "./Voting.sol";
 import "../../node_modules/openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/utils/Strings.sol";
 
 
 contract Rewarding is Voting {
