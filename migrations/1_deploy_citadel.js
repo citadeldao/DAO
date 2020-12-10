@@ -44,16 +44,6 @@ module.exports = async function(deployer) {
             65,
             100
         ]
-        //3600,//60 * 60 * 24 * 365 * 4, // initialUnbondingPeriod
-        //1,//60 * 60 * 24, // initialUnbondingPeriod
-        /*[ // _payees
-            '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
-            '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61'
-        ],
-        [ // _shares
-            50,
-            50
-        ]*/
     ).then(async function(instance){
         TokenInstance = instance;
 
