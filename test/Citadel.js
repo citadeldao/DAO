@@ -42,7 +42,8 @@ contract('ERC20 methods', function(accounts){
 
         const instance = await Citadel.deployed();
 
-        await instance.claimInvestor.sendTransaction(100);
+        await new Promise(_ => setTimeout(_, 3000));
+        await instance.claimTeam.sendTransaction(100);
 
         const value = 10;
 
@@ -152,11 +153,43 @@ contract('Multisig', function(accounts){
 
 })
 
+contract('CitadelInflation', function(accounts){
+
+    it("Number points of history", async function(){
+        const instance = await Citadel.deployed();
+        assert.equal(
+            (await instance.countInflationPoints.call()).length,
+            1
+        )
+    })
+
+    it("Check point in history", async function(){
+        const instance = await Citadel.deployed();
+        const point = await instance.inflationPoint.call(0);
+        assert.equal(
+            point.stakingPct.toNumber(),
+            60,
+            "stakingPct"
+        )
+        assert.equal(
+            point.vestingPct.toNumber(),
+            40,
+            "vestingPct"
+        )
+        assert.equal(
+            point.date.toNumber() > 0,
+            true,
+            "date"
+        )
+    })
+
+})
+
 contract('CitadelFoundationFund', function(accounts){
 
     const sysAddress = '0x0000000000000000000000000000000000000001';
     const localSupply = new BN(totalSupply).multipliedBy(5).dividedBy(100);
-    const stepPrice = localSupply.dividedBy(5);
+    const stepPrice = localSupply.dividedBy(4);
 
     it("Check info", async function(){
         const instance = await Citadel.deployed();
@@ -304,79 +337,44 @@ contract('CitadelCommunityFund', function(accounts){
 
 contract('CitadelInvestors', function(accounts){
 
-    const localSupply = new BN(totalSupply).multipliedBy(25).dividedBy(100);
-    const testPercent = 50;
-    const localLimit = localSupply.multipliedBy(testPercent).dividedBy(100);
+    const teamLocalSupply = new BN(totalSupply).multipliedBy(15).dividedBy(100);
+    const localLimit = 90000000 * 1e6;
 
-    //console.log("localLimit", localLimit.toNumber());
-    const steps = unbondingPeriod / unbondingPeriodFrequency;
-    //console.log("steps", steps);
-    const stepPrice = parseInt(localLimit.dividedBy(steps).toNumber());
-    //console.log("stepPrice", stepPrice);
-
-    it("getInvestorPercent", async function() {
+    it("getTeamInfoOf", async function() {
         const instance = await Citadel.deployed();
+        await new Promise(_ => setTimeout(_, 3000));
+        const info = await instance.getTeamInfoOf.call(accounts[0]);
+        const time = info.time.toNumber();
+        let checkAvailable = teamLocalSupply.multipliedBy(10).dividedBy(100); // first year
+        checkAvailable = checkAvailable.multipliedBy(time).dividedBy(31536000/*1 year in seconds*/); // part of first year
+        checkAvailable = checkAvailable.multipliedBy(localLimit).dividedBy(teamLocalSupply); // user's part
         assert.equal(
-            await instance.getInvestorPercent.call(),
-            testPercent
-        )
-    })
-
-    it("getInvestorPercent (undefined account)", async function() {
-        const instance = await Citadel.deployed();
-        try {
-            await instance.getInvestorPercent.call({from: accounts[2]});
-        } catch(e) {
-            assert(true);
-            return;
-        }
-        assert(false);
-    })
-
-    it("getInvestorLimit", async function() {
-        const instance = await Citadel.deployed();
-        assert.equal(
-            await instance.getInvestorLimit.call(),
-            localLimit.toNumber()
-        )
-    })
-
-    it("getInvestorUsed", async function() {
-        const instance = await Citadel.deployed();
-        assert.equal(
-            await instance.getInvestorUsed.call(),
-            0
-        )
-    })
-
-    it("getInvestorInfo", async function() {
-        const instance = await Citadel.deployed();
-        await new Promise(_ => setTimeout(_, 2000));
-        let res = await instance.getInvestorInfo.call();
-
-        let hasTime = res.hasTime.toNumber();
-        let currentSteps = parseInt(hasTime / unbondingPeriodFrequency);
-        let available = stepPrice * currentSteps;
-        if(steps == currentSteps && amount < localLimit.toNumber()){
-            available = localLimit.toNumber();
-        }
-
-        //console.log({hasTime, currentSteps, amount});
-
-        assert.equal(res.limit.toNumber(), localLimit.toNumber(), "limit");
-        assert.equal(res.steps.toNumber(), steps, "steps");
-        assert.equal(res.stepPrice.toNumber(), stepPrice, "stepPrice");
-        assert.equal(res.currentSteps.toNumber(), currentSteps, "currentSteps");
-        assert.equal(res.available.toNumber(), available, "available");
+            parseInt(checkAvailable.minus(info.used).toNumber()),
+            info.available.toString()
+        );
     })
 
     it("claimInvestor", async function() {
         const instance = await Citadel.deployed();
         const amount = 100;
-        await instance.claimInvestor.sendTransaction(amount);
+        await instance.claimTeam.sendTransaction(amount);
         assert.equal(
             (await instance.balanceOf.call(accounts[0])).toNumber(),
             amount
+        );
+    })
+
+    it("getTeamInfoOf (after claim)", async function() {
+        const instance = await Citadel.deployed();
+        await new Promise(_ => setTimeout(_, 3000));
+        const info = await instance.getTeamInfoOf.call(accounts[0]);
+        const time = info.time.toNumber();
+        let checkAvailable = teamLocalSupply.multipliedBy(10).dividedBy(100); // first year
+        checkAvailable = checkAvailable.multipliedBy(time).dividedBy(31536000/*1 year in seconds*/); // part of first year
+        checkAvailable = checkAvailable.multipliedBy(localLimit).dividedBy(teamLocalSupply); // user's part
+        assert.equal(
+            parseInt(checkAvailable.minus(info.used).toNumber()),
+            info.available.toString()
         );
     })
 
@@ -574,7 +572,8 @@ contract('CitadelTokenLocker', function(accounts){
 
     it("lockCoins", async function() {
         const instance = await Citadel.deployed();
-        await instance.claimInvestor.sendTransaction(100);
+        await new Promise(_ => setTimeout(_, 2000));
+        await instance.claimTeam.sendTransaction(100);
 
         await instance.lockCoins.sendTransaction(10);
         assert.equal(

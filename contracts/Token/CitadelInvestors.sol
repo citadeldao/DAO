@@ -87,8 +87,10 @@ contract CitadelInvestors is CitadelExchange {
         uint limit,
         uint used,
         uint available,
-        uint percent
+        uint percent,
+        uint time
     ) {
+        time = block.timestamp - deployDate;
         limit = _team[addr].limit;
         used = _team[addr].used;
         percent = _team[addr].percent;
@@ -100,8 +102,10 @@ contract CitadelInvestors is CitadelExchange {
         uint limit,
         uint used,
         uint available,
-        uint percent
+        uint percent,
+        uint time
     ) {
+        time = block.timestamp - deployDate;
         limit = _investors[addr].limit;
         used = _investors[addr].used;
         percent = _investors[addr].percent;
@@ -133,7 +137,6 @@ contract CitadelInvestors is CitadelExchange {
         _addressTeam = addr;
         _totalTeam = amount;
         _stagesTeam = stages;
-        _mint(addr, amount);
     }
 
     function _initInvestors(address addr, uint amount, uint[] memory stages) internal {
@@ -141,7 +144,6 @@ contract CitadelInvestors is CitadelExchange {
         _addressInvestors = addr;
         _totalInvestors = amount;
         _stagesInvestors = stages;
-        _mint(addr, amount);
     }
 
 }
