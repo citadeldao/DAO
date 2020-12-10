@@ -53,10 +53,12 @@ contract CitadelInflation is CitadelCommunityFund {
                 emission += year;
                 circulatingSupply += year;
             }
-            if(y == 1) circulatingSupply += 15000000 + 10000000;
-            if(y == 2) circulatingSupply += 22500000 + 15000000;
+            // team unlock + private sale unlock
+            if(y == 1) circulatingSupply += 15000000 + 15000000;
+            if(y == 2) circulatingSupply += 37500000 + 20000000;
             if(y == 3) circulatingSupply += 45000000 + 30000000;
-            if(y == 4) circulatingSupply += 67500000 + 45000000;
+            if(y == 4) circulatingSupply += 52500000 + 35000000;
+            // Foundation Fund unlock
             if(y < 5) circulatingSupply += 10000000;
         }
         year = year.mul(1e6);
