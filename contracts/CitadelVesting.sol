@@ -33,7 +33,7 @@ contract CitadelVesting is Ownable {
 
     byte private constant NEXT_NOTHING = 0x00;
     byte private constant NEXT_INFLATION = 0x10;
-    byte private constant NEXT_SUPPLY = 0x30;
+    byte private constant NEXT_SUPPLY = 0x20;
 
     modifier onlyToken() {
         require(msg.sender == address(_Token));
@@ -195,6 +195,10 @@ contract CitadelVesting is Ownable {
         } else {
             return block.timestamp;
         }
+    }
+
+    function version() external pure returns (string memory) {
+        return '0.1.0';
     }
 
 }

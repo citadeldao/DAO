@@ -3,10 +3,9 @@ pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "./Managing.sol";
-import "../IERC1202.sol";
 
 
-contract Voting is IERC1202, Managing {
+contract Voting is Managing {
 
     mapping (uint256 => Proposal) private _proposals;
     uint256 private _countProposals;

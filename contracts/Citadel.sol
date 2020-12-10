@@ -21,10 +21,6 @@ contract Citadel is CitadelDaoTransport {
         uint _buyerLimit,
         uint[] memory _teamUnlockPct,
         uint[] memory _investorsUnlockPct
-        //uint initialUnbondingPeriod,
-        //uint initialUnbondingPeriodFrequency,
-        //address[] memory _investors,
-        //uint[] memory _shares
     )
     public {
         for (uint i = 0; i < multisigs.length; i++) {
@@ -35,7 +31,6 @@ contract Citadel is CitadelDaoTransport {
         initialSupply = initialSupply.mul(1e6);
         _buyerLimit = _buyerLimit.mul(1e6);
 
-        //_initCitadelInvestors(initialUnbondingPeriod, initialUnbondingPeriodFrequency);
         _initCitadelExchange(_rate, _buyerLimit);
 
         _mint(_bankAddress, initialSupply.mul(10).div(100));
