@@ -38,18 +38,10 @@ contract Citadel is CitadelDaoTransport {
         //_initCitadelInvestors(initialUnbondingPeriod, initialUnbondingPeriodFrequency);
         _initCitadelExchange(_rate, _buyerLimit);
 
-        _mint(_bankAddress, initialSupply);
+        _mint(_bankAddress, initialSupply.mul(10).div(100));
 
         uint256 publicSaleLimit = initialSupply;
         uint256 value = 0;
-
-        value = initialSupply.mul(15).div(100);
-        publicSaleLimit = publicSaleLimit.sub(value);
-        _initTeam(address(6), value, _teamUnlockPct); // minted
-
-        value = initialSupply.mul(10).div(100);
-        publicSaleLimit = publicSaleLimit.sub(value);
-        _initInvestors(address(7), value, _investorsUnlockPct); // minted
 
         value = initialSupply.mul(5).div(100);
         publicSaleLimit = publicSaleLimit.sub(value);
@@ -58,12 +50,25 @@ contract Citadel is CitadelDaoTransport {
         value = initialSupply.mul(5).div(100);
         publicSaleLimit = publicSaleLimit.sub(value);
         _initCFBudget(address(2), value);
+        _mint(address(2), value);
 
         uint256 vestingBudget = initialSupply.mul(60).div(100);
         publicSaleLimit = publicSaleLimit.sub(vestingBudget);
         _initInflation(vestingBudget, address(3), 60, address(4), 40);
+        _mint(address(3), vestingBudget.mul(60).div(100));
+        _mint(address(4), vestingBudget.mul(40).div(100));
 
         _initCitadelTokenLocker(address(5));
+
+        value = initialSupply.mul(15).div(100);
+        publicSaleLimit = publicSaleLimit.sub(value);
+        _initTeam(address(6), value, _teamUnlockPct);
+        _mint(address(6), value);
+
+        value = initialSupply.mul(10).div(100);
+        publicSaleLimit = publicSaleLimit.sub(value);
+        _initInvestors(address(7), value, _investorsUnlockPct);
+        _mint(address(7), value);
 
         _publicSaleLimit = publicSaleLimit;
     }

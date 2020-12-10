@@ -172,12 +172,10 @@ contract CitadelInflation is CitadelCommunityFund {
         _addressStaking = stakeAddr;
         _stakingPct = stakingPct;
         _stakingAmount = totalAmount.mul(stakingPct).div(100);
-        if(_stakingAmount > 0) _transfer(_bankAddress, _addressStaking, _stakingAmount);
 
         _addressVesting = vestAddr;
         _vestingPct = vestingPct;
         _vestingAmount = totalAmount.sub(_stakingAmount);
-        if(_vestingAmount > 0) _transfer(_bankAddress, _addressVesting, _vestingAmount);
 
         emit CitadelInflationRatio(stakingPct, vestingPct);
         _inflationHistory.push(InflationValues(stakingPct, vestingPct, block.timestamp));
