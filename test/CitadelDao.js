@@ -599,6 +599,8 @@ contract('CitadelDao Voting (Updater)', function(accounts){
 
 contract('CitadelDao Rewarding', function(accounts){
 
+    let date, msg, sig;
+
     it("claim staking rewards", async function(){
 
         const instance = await CitadelDao.deployed();
@@ -612,19 +614,42 @@ contract('CitadelDao Rewarding', function(accounts){
         const recipient = accounts[3];
 
         const reward = 12345; // my reward from staking
+        const timestamp = parseInt(new Date().getTime() / 1000); // seconds
         const hash = EthCrypto.hash.keccak256([ // hash to verify data
             {type: "address", value: recipient},
-            {type: "uint256", value: reward}
+            {type: "uint256", value: reward},
+            {type: "uint256", value: timestamp},
         ]);
         const signature = EthCrypto.sign(signerPrivateKey, hash); // check request
 
-        await instance.claimReward.sendTransaction(reward, hash, signature, {from: recipient});
+        date = timestamp;
+        msg = hash;
+        sig = signature;
+
+        await instance.claimReward.sendTransaction(reward, timestamp, hash, signature, {from: recipient});
 
         const CitadelTokenInstance = await Citadel.deployed();
         assert.equal(
             await CitadelTokenInstance.balanceOf.call(recipient),
             reward
         )
+    })
+
+    it("protect double claim staking rewards", async function(){
+
+        const instance = await CitadelDao.deployed();
+
+        const recipient = accounts[3];
+
+        const reward = 12345; // my reward from staking
+        try {
+            await instance.claimReward.call(reward, date, msg, sig, {from: recipient});
+        } catch(e) {
+            assert(e.message.includes('Rewarding: freeze period'));
+            return;
+        }
+        assert(false);
+
     })
 
 })
