@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
 
-import "./CitadelExchange.sol";
+import "./CitadelToken.sol";
 
 
-contract CitadelInvestors is CitadelExchange {
+contract CitadelInvestors is CitadelToken {
 
     struct Person {
         uint limit;

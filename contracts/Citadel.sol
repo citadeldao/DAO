@@ -17,8 +17,6 @@ contract Citadel is CitadelDaoTransport {
     constructor (
         MultisigData[] memory multisigs,
         uint initialSupply,
-        uint _rate,
-        uint _buyerLimit,
         uint[] memory _teamUnlockPct,
         uint[] memory _investorsUnlockPct
     )
@@ -29,10 +27,7 @@ contract Citadel is CitadelDaoTransport {
         }
 
         initialSupply = initialSupply.mul(1e6);
-        _buyerLimit = _buyerLimit.mul(1e6);
-
-        _initCitadelExchange(_rate, _buyerLimit);
-
+        
         _mint(_bankAddress, initialSupply.mul(10).div(100));
 
         uint256 publicSaleLimit = initialSupply;
@@ -65,7 +60,6 @@ contract Citadel is CitadelDaoTransport {
         _initInvestors(address(7), value, _investorsUnlockPct);
         _mint(address(7), value);
 
-        _publicSaleLimit = publicSaleLimit;
     }
 
 }

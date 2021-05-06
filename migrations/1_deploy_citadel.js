@@ -30,8 +30,6 @@ module.exports = async function(deployer) {
             }
         ],
         1000000000, // initialSupply
-        10000000, // rate eth2token
-        45000, // buyer limit
         [ // team unlock
             10,
             35,
