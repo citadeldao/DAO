@@ -15,6 +15,8 @@ function keccak256(str){
     return createKeccakHash('keccak256').update(str).digest();
 }
 
+return;
+
 contract('CitadelDao', function(accounts){
 
     it("Version", async function(){

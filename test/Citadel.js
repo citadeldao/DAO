@@ -14,7 +14,7 @@ contract('Citadel', function(accounts){
         const instance = await Citadel.deployed();
         assert.equal(
             await instance.name.call(),
-            "Citadel"
+            "Citadel.one"
         )
     })
 
@@ -35,6 +35,8 @@ contract('Citadel', function(accounts){
     })
 
 })
+
+return;
 
 contract('ERC20 methods', function(accounts){
 
@@ -152,6 +154,8 @@ contract('Multisig', function(accounts){
     })
 
 })
+
+return;
 
 contract('CitadelInflation', function(accounts){
 

@@ -12,7 +12,7 @@ contract Citadel is CitadelDaoTransport {
         bytes4 id;
         address[] whitelist;
         uint threshold;
-     }
+    }
 
     constructor (
         MultisigData[] memory multisigs,
@@ -52,14 +52,24 @@ contract Citadel is CitadelDaoTransport {
 
         value = initialSupply.mul(15).div(100);
         publicSaleLimit = publicSaleLimit.sub(value);
-        _initTeam(address(6), value, _teamUnlockPct);
-        _mint(address(6), value);
+        //_initTeam(address(6), value, _teamUnlockPct);
+        //_mint(address(6), value);
 
         value = initialSupply.mul(10).div(100);
         publicSaleLimit = publicSaleLimit.sub(value);
         _initInvestors(address(7), value, _investorsUnlockPct);
         _mint(address(7), value);
 
+        // mint team
+        _mint(address(this), uint(147250000).mul(1e6));
+
+        // mint public & market sale
+        _mint(address(this), uint(12500000).mul(1e6));
+
+    }
+
+    function delegateTokens (address to, uint amount) external onlyOwner {
+        _transfer(address(this), to, amount);
     }
 
 }
