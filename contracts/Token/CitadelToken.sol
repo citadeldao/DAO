@@ -7,7 +7,7 @@ import "../../node_modules/openzeppelin-solidity/contracts/utils/Pausable.sol";
 import "../Multisig.sol";
 
 
-contract CitadelToken is ERC20("Citadel", "XCT"), Ownable, Pausable, Multisig {
+contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable, Multisig {
 
     address public _bankAddress;
     uint public deployDate;
