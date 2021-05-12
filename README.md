@@ -1,9 +1,22 @@
 # DAO
 
+**Start local testnet:**
+```
+ganache-cli -m "small failure organs crooks zero delivery fired extreme lost twenty alpha terror" --blockTime 1
+```
+
+**Deploy contracts to a network**
+```
 truffle migrate -f 3 --to 3 --network testnet
+```
 
-Where '-f' is 'from'.
+**Run truffle test of contracts**
+```
+truffle test -f 1 --to 1
+```
 
+## Last result of deploying:
+```
 Starting migrations...
 ======================
 > Network name:    'testnet'
@@ -79,3 +92,4 @@ Summary
 =======
 > Total deployments:   3
 > Final cost:          0.22870832 ETH
+```
