@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import "../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
 import "./ICitadelToken.sol";
 
-contract CitadelUnlockTeam is Ownable {
+contract CitadelUnlockAdvisors is Ownable {
 
     struct Amount {
         uint total;
@@ -66,18 +66,18 @@ contract CitadelUnlockTeam is Ownable {
 
         uint sum = 0;
 
-        sum += _getPart(_getPercent(store.total, 10 * PCTDEC / 100), yr - period);
+        sum += _getPart(_getPercent(store.total, 25 * PCTDEC / 100), yr - period);
 
         if (period - yr > 0) {
             sum += _getPart(_getPercent(store.total, 25 * PCTDEC / 100), yr * 2 - period);
         }
 
         if (period - yr * 2 > 0) {
-            sum += _getPart(_getPercent(store.total, 30 * PCTDEC / 100), yr * 3 - period);
+            sum += _getPart(_getPercent(store.total, 25 * PCTDEC / 100), yr * 3 - period);
         }
 
         if (period - yr * 3 > 0) {
-            sum += _getPart(_getPercent(store.total, 35 * PCTDEC / 100), yr * 4 - period);
+            sum += _getPart(_getPercent(store.total, 25 * PCTDEC / 100), yr * 4 - period);
         }
 
         return sum - store.used;

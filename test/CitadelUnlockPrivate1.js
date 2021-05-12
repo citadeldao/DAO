@@ -1,29 +1,29 @@
 const BN = require('bignumber.js');
 const Citadel = artifacts.require("Citadel");
-const CitadelUnlockTeam = artifacts.require("CitadelUnlockTeam");
+const CitadelUnlockPrivate1 = artifacts.require("CitadelUnlockPrivate1");
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenMultiplier = 1e6;
-const totalSupply = 147_250_000 * tokenMultiplier;
+const totalSupply = 2_500_000 * tokenMultiplier;
 
 let deployedDate = 0;
 
 //return;
 
-contract('CitadelUnlockTeam', function(accounts){
+contract('CitadelUnlockPrivate1', function(accounts){
 
-    it("Balance of CitadelUnlockTeam", async function() {
+    it("Balance of CitadelUnlockPrivate1", async function() {
         const instance = await Citadel.deployed();
         deployedDate = (await instance.deployed.call()).toNumber();
         assert.equal(
-            (await instance.balanceOf.call(CitadelUnlockTeam.address)).toNumber(),
+            (await instance.balanceOf.call(CitadelUnlockPrivate1.address)).toNumber(),
             totalSupply
         )
     })
 
     it("Unlocked amount (immediately)", async function() {
         const date = deployedDate;
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOfTest.call(ZERO_ADDRESS, date)).toNumber(),
             0
@@ -32,52 +32,43 @@ contract('CitadelUnlockTeam', function(accounts){
 
     it("Unlocked amount (60 days)", async function() {
         const date = deployedDate + 3600 * 24 * 60;
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOfTest.call(ZERO_ADDRESS, date)).toNumber(),
-            2_420_539.675 * tokenMultiplier
+            136_985 * tokenMultiplier
         )
     })
 
     it("Unlocked amount (1 year)", async function() {
         const date = deployedDate + 3600 * 24 * 365;
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOfTest.call(ZERO_ADDRESS, date)).toNumber(),
-            14_725_000 * tokenMultiplier
+            833_332.5 * tokenMultiplier
         )
     })
 
     it("Unlocked amount (2 years)", async function() {
         const date = deployedDate + 3600 * 24 * 365 * 2;
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOfTest.call(ZERO_ADDRESS, date)).toNumber(),
-            51_537_500 * tokenMultiplier
+            1_666_665 * tokenMultiplier
         )
     })
 
     it("Unlocked amount (3 years)", async function() {
-        const date = deployedDate + 3600 * 24 * 365 * 3;
-        const instance = await CitadelUnlockTeam.deployed();
-        assert.equal(
-            (await instance.calcUnlockOfTest.call(ZERO_ADDRESS, date)).toNumber(),
-            95_712_500 * tokenMultiplier
-        )
-    })
-
-    it("Unlocked amount (4 years)", async function() {
         const date = deployedDate + 3600 * 24 * 365 * 4;
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOfTest.call(ZERO_ADDRESS, date)).toNumber(),
             totalSupply
         )
     })
 
-    it("Unlocked amount (5 years)", async function() {
+    it("Unlocked amount (4 years)", async function() {
         const date = deployedDate + 3600 * 24 * 365 * 5;
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOfTest.call(ZERO_ADDRESS, date)).toNumber(),
             totalSupply
@@ -85,27 +76,27 @@ contract('CitadelUnlockTeam', function(accounts){
     })
 
     it("Unlocked amount (10k sec preset time for zero address)", async function() {
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOf.call(accounts[0])).toNumber(),
-            3170 * tokenMultiplier
+            210 * tokenMultiplier
         )
     })
 
     it("Claim unlocked amount", async function() {
         const tokenInstance = await Citadel.deployed();
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         let balance = (await tokenInstance.balanceOf.call(accounts[0])).toNumber();
         await instance.claim.sendTransaction();
         balance = (await tokenInstance.balanceOf.call(accounts[0])).toNumber() - balance;
         assert.equal(
             balance,
-            3170 * tokenMultiplier
+            210 * tokenMultiplier
         )
     })
 
     it("Post-claim unlocked amount", async function() {
-        const instance = await CitadelUnlockTeam.deployed();
+        const instance = await CitadelUnlockPrivate1.deployed();
         assert.equal(
             (await instance.calcUnlockOf.call(accounts[0])).toNumber(),
             0

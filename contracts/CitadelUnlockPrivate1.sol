@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import "../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
 import "./ICitadelToken.sol";
 
-contract CitadelUnlockTeam is Ownable {
+contract CitadelUnlockPrivate1 is Ownable {
 
     struct Amount {
         uint total;
@@ -62,37 +62,13 @@ contract CitadelUnlockTeam is Ownable {
         if (period <= 0) return 0;
         Amount memory store = _address == address(0) ? total : list[_address];
 
-        int yr = int(365 days);
+        uint pct = uint(period) * PCTDEC / (365 days * 3);
 
-        uint sum = 0;
+        if (pct > PCTDEC) pct = PCTDEC;
 
-        sum += _getPart(_getPercent(store.total, 10 * PCTDEC / 100), yr - period);
-
-        if (period - yr > 0) {
-            sum += _getPart(_getPercent(store.total, 25 * PCTDEC / 100), yr * 2 - period);
-        }
-
-        if (period - yr * 2 > 0) {
-            sum += _getPart(_getPercent(store.total, 30 * PCTDEC / 100), yr * 3 - period);
-        }
-
-        if (period - yr * 3 > 0) {
-            sum += _getPart(_getPercent(store.total, 35 * PCTDEC / 100), yr * 4 - period);
-        }
+        uint sum = store.total * pct / PCTDEC;
 
         return sum - store.used;
-    }
-
-    function _getPart(uint amount, int time) private pure returns (uint) {
-        if (time > 0) {
-            return _getPercent(amount, (365 days - uint(time)) * PCTDEC / 365 days);
-        } else {
-            return amount;
-        }
-    }
-
-    function _getPercent(uint amount, uint pct) private pure returns (uint) {
-        return amount * pct / PCTDEC;
     }
 
 }
