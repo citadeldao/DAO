@@ -1,5 +1,8 @@
 const Citadel = artifacts.require("Citadel");
 const CitadelUnlockTeam = artifacts.require("CitadelUnlockTeam");
+const CitadelUnlockAdvisors = artifacts.require("CitadelUnlockAdvisors");
+const CitadelUnlockPrivate1 = artifacts.require("CitadelUnlockPrivate1");
+const CitadelUnlockPrivate2 = artifacts.require("CitadelUnlockPrivate2");
 const CitadelDao = artifacts.require("CitadelDao");
 const CitadelVesting = artifacts.require("CitadelVesting");
 
@@ -8,7 +11,14 @@ const CitadelVesting = artifacts.require("CitadelVesting");
 
 module.exports = async function(deployer) {
 
-    var TokenInstance, CitadelUnlockTeamInstance, DaoInstance, VestingInstance;
+    var TokenInstance,
+        tokenDeployed,
+        CitadelUnlockTeamInstance,
+        CitadelUnlockAdvisorsInstance,
+        CitadelUnlockPrivate1Instance,
+        CitadelUnlockPrivate2Instance,
+        DaoInstance,
+        VestingInstance;
 
     deployer.deploy(
         Citadel,
@@ -31,22 +41,11 @@ module.exports = async function(deployer) {
             }
         ],
         1000000000, // initialSupply
-        [ // team unlock
-            10,
-            35,
-            65,
-            100
-        ],
-        [ // private unlock
-            15,
-            35,
-            65,
-            100
-        ]
     ).then(async function(instance){
+
         TokenInstance = instance;
 
-        const tokenDeployed = (await TokenInstance.deployed.call()).toNumber();
+        tokenDeployed = (await TokenInstance.deployed.call()).toNumber();
 
         return deployer.deploy(
             CitadelUnlockTeam,
@@ -61,6 +60,7 @@ module.exports = async function(deployer) {
             ],
             tokenDeployed + 10000 // all actions like after 10.000 sec
         );
+
     }).then(async function(instance){
 
         CitadelUnlockTeamInstance = instance;
@@ -69,6 +69,77 @@ module.exports = async function(deployer) {
             CitadelUnlockTeamInstance.address,
             147_250_000 * 1e6
         );
+
+        return deployer.deploy(
+            CitadelUnlockAdvisors,
+            TokenInstance.address,
+            [
+                '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
+                '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
+            ],
+            [
+                2_000_000 * 1e6,
+                  750_000 * 1e6,
+            ],
+            tokenDeployed + 10000 // all actions like after 10.000 sec
+        );
+
+    }).then(async function(instance){
+
+        CitadelUnlockAdvisorsInstance = instance;
+
+        await TokenInstance.delegateTokens.sendTransaction(
+            CitadelUnlockAdvisorsInstance.address,
+            2_750_000 * 1e6
+        );
+
+        return deployer.deploy(
+            CitadelUnlockPrivate1,
+            TokenInstance.address,
+            [
+                '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
+                '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
+            ],
+            [
+                2_000_000 * 1e6,
+                  500_000 * 1e6,
+            ],
+            tokenDeployed + 10000 // all actions like after 10.000 sec
+        );
+
+    }).then(async function(instance){
+
+        CitadelUnlockPrivate1Instance = instance;
+
+        await TokenInstance.delegateTokens.sendTransaction(
+            CitadelUnlockPrivate1Instance.address,
+            2_500_000 * 1e6
+        );
+
+        return deployer.deploy(
+            CitadelUnlockPrivate2,
+            TokenInstance.address,
+            [
+                '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
+                '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
+            ],
+            [
+                48_000_000 * 1e6,
+                   333_333 * 1e6,
+            ],
+            tokenDeployed + 10000 // all actions like after 10.000 sec
+        );
+
+    }).then(async function(instance){
+
+        CitadelUnlockPrivate2Instance = instance;
+
+        await TokenInstance.delegateTokens.sendTransaction(
+            CitadelUnlockPrivate2Instance.address,
+            48_333_333 * 1e6
+        );
+
+    //}).then(async function(instance){
 
         /*await TokenInstance.setTeam.sendTransaction([
             '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
