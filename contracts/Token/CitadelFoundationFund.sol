@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
 
-import "./CitadelInvestors.sol";
+import "./CitadelToken.sol";
 
 
-contract CitadelFoundationFund is CitadelInvestors {
+contract CitadelFoundationFund is CitadelToken {
 
     bool private _isInitialized;
     address private _addressFF;
