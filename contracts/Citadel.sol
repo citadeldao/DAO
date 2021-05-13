@@ -76,6 +76,9 @@ contract Citadel is CitadelDaoTransport {
         // mint private found fund
         _mint(address(this), uint(40000000).mul(1e6));
 
+        // mint private community fund
+        _mint(address(this), uint(50000000).mul(1e6));
+
         // mint public & market sale
         _mint(address(this), uint(12500000).mul(1e6));
 
