@@ -4,6 +4,7 @@ const CitadelUnlockAdvisors = artifacts.require("CitadelUnlockAdvisors");
 const CitadelUnlockPrivate1 = artifacts.require("CitadelUnlockPrivate1");
 const CitadelUnlockPrivate2 = artifacts.require("CitadelUnlockPrivate2");
 const CitadelUnlockEcoFund = artifacts.require("CitadelUnlockEcoFund");
+const CitadelUnlockFoundFund = artifacts.require("CitadelUnlockFoundFund");
 const CitadelDao = artifacts.require("CitadelDao");
 const CitadelVesting = artifacts.require("CitadelVesting");
 
@@ -19,6 +20,7 @@ module.exports = async function(deployer) {
         CitadelUnlockPrivate1Instance,
         CitadelUnlockPrivate2Instance,
         CitadelUnlockEcoFundInstance,
+        CitadelUnlockFoundFundInstance,
         DaoInstance,
         VestingInstance;
 
@@ -161,6 +163,28 @@ module.exports = async function(deployer) {
         await TokenInstance.delegateTokens.sendTransaction(
             CitadelUnlockEcoFundInstance.address,
             196_666_667 * 1e6
+        );
+
+        return deployer.deploy(
+            CitadelUnlockFoundFund,
+            40_000_000 * 1e6,
+            TokenInstance.address,
+            [ // Multisig addresses
+                '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
+                '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
+                '0xb3dab625941bb8be74a00540ec8f94aa064ea42c'
+            ],
+            2, // threshold
+            tokenDeployed + 3600 * 24 * 90 + 10000 // all actions like after 10.000 sec
+        );
+
+    }).then(async function(instance){
+
+        CitadelUnlockFoundFundInstance = instance;
+
+        await TokenInstance.delegateTokens.sendTransaction(
+            CitadelUnlockFoundFundInstance.address,
+            40_000_000 * 1e6
         );
 
 
