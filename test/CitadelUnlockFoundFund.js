@@ -8,7 +8,7 @@ const totalSupply = 40_000_000 * tokenMultiplier;
 let deployedDate = 0;
 let delay = 3600 * 24 * 90;
 
-//return;
+return;
 
 contract('CitadelUnlockFoundFund', function(accounts){
 
@@ -17,6 +17,14 @@ contract('CitadelUnlockFoundFund', function(accounts){
         deployedDate = (await instance.deployed.call()).toNumber();
         assert.equal(
             (await instance.balanceOf.call(CitadelUnlockFoundFund.address)).toNumber(),
+            totalSupply
+        )
+    })
+
+    it("Set budget of CitadelUnlockFoundFund", async function() {
+        const instance = await CitadelUnlockFoundFund.deployed();
+        assert.equal(
+            (await instance.getBudget.call()).toNumber(),
             totalSupply
         )
     })
@@ -58,7 +66,7 @@ contract('CitadelUnlockFoundFund', function(accounts){
         )
     })
 
-    it("Claim unlocked amount", async function() {
+    it("Transfer unlocked amount", async function() {
         const tokenInstance = await Citadel.deployed();
         const instance = await CitadelUnlockFoundFund.deployed();
         let balance = (await tokenInstance.balanceOf.call(accounts[0])).toNumber();

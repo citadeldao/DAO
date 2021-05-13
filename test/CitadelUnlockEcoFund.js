@@ -21,6 +21,14 @@ contract('CitadelUnlockEcoFund', function(accounts){
         )
     })
 
+    it("Set budget of CitadelUnlockEcoFund", async function() {
+        const instance = await CitadelUnlockEcoFund.deployed();
+        assert.equal(
+            (await instance.getBudget.call()).toNumber(),
+            totalSupply
+        )
+    })
+
     it("Unlocked amount (60 days)", async function() {
         const date = deployedDate + 3600 * 24 * 60;
         const instance = await CitadelUnlockEcoFund.deployed();
@@ -58,7 +66,7 @@ contract('CitadelUnlockEcoFund', function(accounts){
         )
     })
 
-    it("Claim unlocked amount", async function() {
+    it("Transfer unlocked amount", async function() {
         const tokenInstance = await Citadel.deployed();
         const instance = await CitadelUnlockEcoFund.deployed();
         let balance = (await tokenInstance.balanceOf.call(accounts[0])).toNumber();
