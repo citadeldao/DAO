@@ -8,7 +8,7 @@ const totalSupply = 2_750_000 * tokenMultiplier;
 
 let deployedDate = 0;
 
-//return;
+return;
 
 contract('CitadelUnlockAdvisors', function(accounts){
 
@@ -109,6 +109,15 @@ contract('CitadelUnlockAdvisors', function(accounts){
         assert.equal(
             (await instance.calcUnlockOf.call(accounts[0])).toNumber(),
             0
+        )
+    })
+
+    it("Decreased balance of CitadelUnlockAdvisors", async function() {
+        const instance = await Citadel.deployed();
+        deployedDate = (await instance.deployed.call()).toNumber();
+        assert.equal(
+            (await instance.balanceOf.call(CitadelUnlockAdvisors.address)).toNumber(),
+            totalSupply - 158.5 * tokenMultiplier
         )
     })
 
