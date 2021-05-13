@@ -62,11 +62,12 @@ contract CitadelUnlockPrivate1 is Ownable {
         if (period <= 0) return 0;
         Amount memory store = _address == address(0) ? total : list[_address];
 
-        uint pct = uint(period) * PCTDEC / (365 days * 3);
+        uint full_period = 365 days * 3;
+        uint act_period = uint(period);
 
-        if (pct > PCTDEC) pct = PCTDEC;
+        if (act_period > full_period) act_period = full_period;
 
-        uint sum = store.total * pct / PCTDEC;
+        uint sum = store.total * act_period / full_period;
 
         return sum - store.used;
     }
