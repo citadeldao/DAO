@@ -1,33 +1,67 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
 
-import "./CitadelCommunityFund.sol";
+import "./CitadelToken.sol";
 
 
-contract CitadelInflation is CitadelCommunityFund {
+contract CitadelInflation is CitadelToken {
+
+    uint internal startInflationDate;
 
     bool private _isInitialized;
-    uint256 private _budgetAmount;
-
-    address private _addressStaking;
-    uint private _stakingPct;
-    uint256 private _stakingAmount;
-    uint256 private _stakingUsed;
-
-    address private _addressVesting;
-    uint private _vestingPct;
-    uint private _vestingAmount;
-    uint256 private _vestingUsed;
+    //uint private _otherSum;
+    //uint private _budgetAmount;
+    uint private _maxSupply;
+    uint private _unlockedSupply;
+    uint private _savedInflationYear;
+    uint private _yearUnlockedBudget;
 
     struct InflationValues {
+        uint inflationPct;
         uint stakingPct;
-        uint vestingPct;
+        uint currentSupply;
+        uint yearlySupply;
         uint date;
     }
 
     InflationValues[] private _inflationHistory;
 
-    event CitadelInflationRatio(uint stakingPct, uint vestingPct);
+    event CitadelInflationRatio(uint inflationPct, uint stakingPct);
+
+    function startInflation() external onlyOwner {
+        require (startInflationDate == 0, "Inflation is already started");
+        startInflationDate = block.timestamp;
+        _savedInflationYear = startInflationDate;
+        _inflationHistory[0].date = _savedInflationYear;
+    }
+
+    function startInflationTo(uint date) external onlyOwner {
+        require (startInflationDate == 0 || startInflationDate > block.timestamp, "Inflation is already started");
+        require (date > block.timestamp, "Starting date must be in the future");
+        startInflationDate = date;
+        _savedInflationYear = startInflationDate;
+        _inflationHistory[0].date = _savedInflationYear;
+    }
+
+    function getInflationStartDate() external view
+    returns (uint) {
+        return startInflationDate;
+    }
+
+    function getSavedInflationYear() external view
+    returns (uint) {
+        return _savedInflationYear;
+    }
+
+    function getMaxSupply() external view
+    returns (uint) {
+        return _maxSupply;
+    }
+
+    /*function calc() external view
+    returns (uint) {
+
+    }*/
 
     function yearInflationEmission(uint timestamp) external view
     returns (uint) {
@@ -79,13 +113,17 @@ contract CitadelInflation is CitadelCommunityFund {
 
     function inflationPoint(uint index) external view
     returns (
+        uint inflationPct,
         uint stakingPct,
-        uint vestingPct,
+        uint currentSupply,
+        uint yearlySupply,
         uint date
     ) {
         require(index < _inflationHistory.length, "CitadelInflation: unexpected index");
+        inflationPct = _inflationHistory[index].inflationPct;
         stakingPct = _inflationHistory[index].stakingPct;
-        vestingPct = _inflationHistory[index].vestingPct;
+        currentSupply = _inflationHistory[index].currentSupply;
+        yearlySupply = _inflationHistory[index].yearlySupply;
         date = _inflationHistory[index].date;
     }
 
@@ -94,35 +132,12 @@ contract CitadelInflation is CitadelCommunityFund {
         return _inflationHistory.length;
     }
 
-    function getStakingInfo() external view returns (
-        address addr,
-        uint pct,
-        uint256 budget,
-        uint256 budgeUsed
-    ) {
-        addr = _addressStaking;
-        pct = _stakingPct;
-        budget = _stakingAmount;
-        budgeUsed = _stakingUsed;
-    }
-
-    function getVestingInfo() external view returns (
-        address addr,
-        uint pct,
-        uint256 budget,
-        uint256 budgeUsed
-    ) {
-        addr = _addressVesting;
-        pct = _vestingPct;
-        budget = _vestingAmount;
-        budgeUsed = _vestingUsed;
-    }
-
     function _changeInflationRatio(uint stakingPct, uint vestingPct) internal {
         require((stakingPct + vestingPct) == 100, "CitadelInflation: incorrect percentages");
-        uint256 stakingAmount = _budgetAmount.mul(stakingPct).div(100);
-        uint256 vestingAmount = _budgetAmount.sub(stakingAmount);
-        if (stakingPct < _stakingPct) {
+
+        //uint256 stakingAmount = _budgetAmount.mul(stakingPct).div(100);
+        //uint256 vestingAmount = _budgetAmount.sub(stakingAmount);
+        /*if (stakingPct < _stakingPct) {
             require(stakingAmount >= _stakingUsed, "CitadelInflation: new staking budget less than already used");
             uint256 diff = _stakingAmount.sub(stakingAmount);
             if (diff > 0) _transfer(_addressStaking, _addressVesting, diff);
@@ -130,36 +145,87 @@ contract CitadelInflation is CitadelCommunityFund {
             require(vestingAmount >= _vestingUsed, "CitadelInflation: new vesting budget less than already used");
             uint256 diff = _vestingAmount.sub(vestingAmount);
             if (diff > 0) _transfer(_addressVesting, _addressStaking, diff);
-        }
-        _stakingPct = stakingPct;
-        _stakingAmount = stakingAmount;
-        _vestingPct = vestingPct;
-        _vestingAmount = vestingAmount;
-        emit CitadelInflationRatio(stakingPct, vestingPct);
-        _inflationHistory.push(InflationValues(stakingPct, vestingPct, block.timestamp));
+        }*/
+        //_stakingPct = stakingPct;
+        //_stakingAmount = stakingAmount;
+        //_vestingPct = vestingPct;
+        //_vestingAmount = vestingAmount;
+
+        InflationValues memory last = _inflationHistory[_inflationHistory.length - 1];
+
+        emit CitadelInflationRatio(last.inflationPct, stakingPct);
+        _inflationHistory.push(InflationValues(last.inflationPct, stakingPct, _unlockedSupply, _yearUnlockedBudget, block.timestamp));
         _updatedInflationRatio(vestingPct);
+    }
+
+    // add checking address of contract
+    function withdraw(address to, uint amount) external {
+        _makeInflationSnapshot();
+        _transfer(address(1), to, amount);
+    }
+
+    // add checking address of contract
+    function updateInflation(uint pct) external {
+        require(pct >= 200 && pct <= 3000, "Percentage must be between 2% and 30%");
+        _makeInflationSnapshot();
+        _updateInflation(pct);
+    }
+
+    function _updateInflation(uint pct) private {
+        require(_maxSupply != _unlockedSupply);
+
+        InflationValues memory lastPoint = _inflationHistory[_inflationHistory.length - 1];
+        uint spentTime = block.timestamp - lastPoint.date;
+        require(spentTime >= 30 days);
+
+        _unlockedSupply += _yearUnlockedBudget * lastPoint.inflationPct * spentTime / 365 days / 10000;
+
+        require(pct <= _restInflPct(), "Too high percentage");
+
+        _inflationHistory.push(InflationValues(pct, lastPoint.stakingPct, _unlockedSupply, _yearUnlockedBudget, block.timestamp));
+    }
+
+    function _makeInflationSnapshot() private {
+        if (_maxSupply == _unlockedSupply) return;
+
+        uint spentTime = block.timestamp - _savedInflationYear;
+        if (spentTime < 365 days) return;
+
+        InflationValues memory lastPoint = _inflationHistory[_inflationHistory.length - 1];
+
+        uint infl = lastPoint.inflationPct;
+        for (uint y = 0; y < spentTime / 365 days; y++) {
+            _savedInflationYear += 365 days;
+            uint updateUnlock = _yearUnlockedBudget * infl * (_savedInflationYear - lastPoint.date) / 365 days / 10000;
+            if (updateUnlock + _unlockedSupply >= _maxSupply) {
+                infl = _restInflPct();
+                _unlockedSupply = _maxSupply;
+                _inflationHistory.push(InflationValues(infl, lastPoint.stakingPct, _unlockedSupply, _unlockedSupply, _savedInflationYear));
+                break;
+            } else {
+                _unlockedSupply += updateUnlock;
+                if (infl != 200) {
+                    if (infl > 50 && infl - 50 > 200) infl -= 50; // -0.5% each year
+                    if (infl < 200) infl = 200; // 2% is minimum
+                }
+                _inflationHistory.push(InflationValues(infl, lastPoint.stakingPct, _unlockedSupply, _unlockedSupply, _savedInflationYear));
+            }
+        }
+        _yearUnlockedBudget = _unlockedSupply;
+    }
+
+    function _restInflPct() private view returns (uint) {
+        return (_maxSupply - _unlockedSupply) * 10000 / _maxSupply;
     }
 
     function _updatedInflationRatio(uint vestingAmount) internal virtual { }
 
-    function _transferStakingRewards(address account, uint256 amount) internal {
-        _stakingUsed = _stakingUsed.add(amount);
-        require(_stakingAmount >= _stakingUsed, "CitadelInflation: too big amount");
-        _transfer(_addressStaking, account, amount);
-    }
-
-    function _transferVesting(address account, uint256 amount) internal {
-        _vestingUsed = _vestingUsed.add(amount);
-        require(_vestingAmount >= _vestingUsed, "CitadelInflation: too big amount");
-        _transfer(_addressVesting, account, amount);
-    }
-
     function _initInflation(
-        uint256 totalAmount,
-        address stakeAddr,
+        uint otherSum,
+        uint totalAmount,
+        uint inflationPct,
         uint stakingPct,
-        address vestAddr,
-        uint vestingPct
+        uint vestingPct // has to be removed
     ) internal {
 
         require(!_isInitialized);
@@ -167,18 +233,15 @@ contract CitadelInflation is CitadelCommunityFund {
 
         _isInitialized = true;
 
-        _budgetAmount = totalAmount;
+        //_otherSum = otherSum;
+        //_budgetAmount = totalAmount;
 
-        _addressStaking = stakeAddr;
-        _stakingPct = stakingPct;
-        _stakingAmount = totalAmount.mul(stakingPct).div(100);
+        _maxSupply = otherSum + totalAmount;
+        _unlockedSupply = otherSum;
+        _yearUnlockedBudget = otherSum;
 
-        _addressVesting = vestAddr;
-        _vestingPct = vestingPct;
-        _vestingAmount = totalAmount.sub(_stakingAmount);
-
-        emit CitadelInflationRatio(stakingPct, vestingPct);
-        _inflationHistory.push(InflationValues(stakingPct, vestingPct, block.timestamp));
+        emit CitadelInflationRatio(inflationPct, stakingPct);
+        _inflationHistory.push(InflationValues(inflationPct, stakingPct, _unlockedSupply, _yearUnlockedBudget, block.timestamp));
 
     }
 

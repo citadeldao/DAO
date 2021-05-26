@@ -6,15 +6,57 @@ import "../ICitadelVesting.sol";
 
 contract CitadelTokenLocker is CitadelInflation {
 
+    struct HistoryItem {
+        uint value;
+        uint date;
+    }
+
     ICitadelVesting private _Vesting;
     mapping (address => uint256) public lockedCoins;
     bool private _isInitialized;
     address private _lockerAddress;
 
+    HistoryItem[] private _totalLockedSupplyHistory;
+    mapping (address => HistoryItem[]) private _lockedCoinsHistory;
+
+    function totalSupplyHistoryCount() external view
+    returns (uint) {
+        return _totalLockedSupplyHistory.length;
+    }
+
+    function totalSupplyHistory(uint index) external view
+    returns (
+        uint value,
+        uint date
+    ) {
+        require (index < _totalLockedSupplyHistory.length, "CitadelTokenLocker: unexpected index");
+        value = _totalLockedSupplyHistory[index].value;
+        date = _totalLockedSupplyHistory[index].date;
+    }
+
+    function lockHistoryCount(address addr) external view
+    returns (uint) {
+        return _lockedCoinsHistory[addr].length;
+    }
+
+    function lockHistory(address addr, uint index) external view
+    returns (
+        uint value,
+        uint date
+    ) {
+        require (index < _lockedCoinsHistory[addr].length, "CitadelTokenLocker: unexpected index");
+        value = _lockedCoinsHistory[addr][index].value;
+        date = _lockedCoinsHistory[addr][index].date;
+    }
+
     function lockCoins(uint256 amount) external {
 
         _transfer(msg.sender, _lockerAddress, amount);
         lockedCoins[msg.sender] = lockedCoins[msg.sender].add(amount);
+        // put mark in history
+        _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), block.timestamp));
+        _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], block.timestamp));
+        // ...
         _Vesting.userFrozeCoins(msg.sender);
 
     }
@@ -23,6 +65,10 @@ contract CitadelTokenLocker is CitadelInflation {
 
         _transfer(_lockerAddress, msg.sender, amount);
         lockedCoins[msg.sender] = lockedCoins[msg.sender].sub(amount);
+        // put mark in history
+        _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), block.timestamp));
+        _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], block.timestamp));
+        // ...
         _Vesting.userUnfrozeCoins(msg.sender);
 
     }
@@ -34,6 +80,12 @@ contract CitadelTokenLocker is CitadelInflation {
     }
 
     function lockedSupply() external view returns (uint256) {
+
+        return _lockedTotalSupply();
+
+    }
+
+    function _lockedTotalSupply() private view returns (uint256) {
 
         return balanceOf(_lockerAddress);
 

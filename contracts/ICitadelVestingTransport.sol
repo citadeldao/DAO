@@ -17,4 +17,33 @@ interface ICitadelVestingTransport {
     );
     function yearInflationEmission(uint timestamp) external view returns (uint);
 
+    function getMaxSupply() external view returns (uint);
+
+    function getInflationStartDate() external view returns (uint);
+    function getSavedInflationYear() external view returns (uint);
+
+    function countInflationPoints() external view returns (uint);
+    function inflationPoint(uint index) external view
+    returns (
+        uint inflationPct,
+        uint stakingPct,
+        uint currentSupply,
+        uint yearlySupply,
+        uint date
+    );
+
+    function totalSupplyHistoryCount() external view returns (uint);
+    function totalSupplyHistory(uint index) external view
+    returns (
+        uint value,
+        uint date
+    );
+
+    function lockHistoryCount(address addr) external view returns (uint);
+    function lockHistory(address addr, uint index) external view
+    returns (
+        uint value,
+        uint date
+    );
+
 }

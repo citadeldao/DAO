@@ -24,32 +24,27 @@ contract Citadel is CitadelDaoTransport {
             _initMultisigWhitelist(ms.id, ms.whitelist, ms.threshold);
         }
 
-        initialSupply = initialSupply.mul(1e6);
+        // mint inflation
+        uint inflation = uint(500000000).mul(1e6);
+        _mint(address(1), inflation);
+
+        //initialSupply = initialSupply.mul(1e6);
         
-        _mint(_bankAddress, initialSupply.mul(10).div(100));
+        //_mint(_bankAddress, initialSupply.mul(10).div(100));
 
-        uint256 publicSaleLimit = initialSupply;
-        uint256 value = 0;
+        //uint256 publicSaleLimit = initialSupply;
+        //uint256 value = 0;
 
-        value = initialSupply.mul(5).div(100);
-        publicSaleLimit = publicSaleLimit.sub(value);
-        _initFFBudget(address(1), value);
-
-        value = initialSupply.mul(5).div(100);
-        publicSaleLimit = publicSaleLimit.sub(value);
-        _initCFBudget(address(2), value);
-        _mint(address(2), value);
-
-        uint256 vestingBudget = initialSupply.mul(60).div(100);
-        publicSaleLimit = publicSaleLimit.sub(vestingBudget);
-        _initInflation(vestingBudget, address(3), 60, address(4), 40);
-        _mint(address(3), vestingBudget.mul(60).div(100));
-        _mint(address(4), vestingBudget.mul(40).div(100));
+        //uint256 vestingBudget = initialSupply.mul(60).div(100);
+        //publicSaleLimit = publicSaleLimit.sub(vestingBudget);
+        _initInflation(inflation, inflation, 800, 40, 60);
+        //_mint(address(3), vestingBudget.mul(60).div(100));
+        //_mint(address(4), vestingBudget.mul(40).div(100));
 
         _initCitadelTokenLocker(address(5));
 
-        value = initialSupply.mul(15).div(100);
-        publicSaleLimit = publicSaleLimit.sub(value);
+        //value = initialSupply.mul(15).div(100);
+        //publicSaleLimit = publicSaleLimit.sub(value);
         //_initTeam(address(6), value, _teamUnlockPct);
         //_mint(address(6), value);
 
@@ -81,6 +76,8 @@ contract Citadel is CitadelDaoTransport {
 
         // mint public & market sale
         _mint(address(this), uint(12500000).mul(1e6));
+
+        assert(totalSupply() == initialSupply);
 
     }
 

@@ -7,7 +7,7 @@ const totalSupply = 50_000_000 * tokenMultiplier;
 
 let deployedDate = 0;
 
-//return;
+return;
 
 contract('CitadelUnlockCommFund', function(accounts){
 
