@@ -1,8 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
+pragma experimental ABIEncoderV2;
 
 
 interface ICitadelVestingTransport {
+
+    struct InflationPointValues {
+        uint inflationPct;
+        uint stakingPct;
+        uint currentSupply;
+        uint yearlySupply;
+        uint date;
+    }
 
     function deployed() external view returns (uint);
 
@@ -23,14 +32,15 @@ interface ICitadelVestingTransport {
     function getSavedInflationYear() external view returns (uint);
 
     function countInflationPoints() external view returns (uint);
-    function inflationPoint(uint index) external view
+    /*function inflationPoint(uint index) external view
     returns (
         uint inflationPct,
         uint stakingPct,
         uint currentSupply,
         uint yearlySupply,
         uint date
-    );
+    );*/
+    function inflationPoint(uint index) external view returns (InflationPointValues memory);
 
     function totalSupplyHistoryCount() external view returns (uint);
     function totalSupplyHistory(uint index) external view
@@ -45,5 +55,7 @@ interface ICitadelVestingTransport {
         uint value,
         uint date
     );
+
+    function withdraw(address to, uint amount) external;
 
 }

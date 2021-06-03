@@ -144,7 +144,7 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
         try {
             await instance.multisigWhitelistAdd.sendTransaction(accounts[3], {from: accounts[3]});
         } catch(e) {
-            assert(e.reason === 'Multisig: You cannot execute this method');
+            assert.equal(e.reason, 'Multisig: You cannot execute this method');
             return;
         }
         assert(false);

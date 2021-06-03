@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
+pragma experimental ABIEncoderV2;
 
 import "../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
 import "./ICitadelVestingTransport.sol";
 
 
-contract CitadelVesting is Ownable {
+contract CitadelRewards is Ownable {
 
     ICitadelVestingTransport private _Token;
     uint private _tokenDeployed;
-    bool private _isTest;
-    uint private _testTimestamp;
     uint private _maxInflationSupply;
 
     struct Option {
@@ -24,8 +23,16 @@ contract CitadelVesting is Ownable {
         uint date;
     }
 
-    Option[] private _inflationsPct; // inflation %
-    Option[] private _totalSupplyHistory;
+    struct InflationPointValues {
+        uint inflationPct;
+        uint stakingPct;
+        uint currentSupply;
+        uint yearlySupply;
+        uint date;
+    }
+
+    //Option[] private _inflationsPct; // inflation %
+    //Option[] private _totalSupplyHistory;
 
     struct UserSnapshot {
         uint indexInflation;
@@ -50,24 +57,17 @@ contract CitadelVesting is Ownable {
     }
 
     constructor (
-        address addressOfToken,
-        bool isTest_
+        address addressOfToken
     ) public {
         _Token = ICitadelVestingTransport(addressOfToken);
         _tokenDeployed = _Token.deployed();
         _maxInflationSupply = _Token.getMaxSupply();
-        ( , uint inflationPct, , ) = _Token.getVestingInfo();
+        /*( , uint inflationPct, , ) = _Token.getVestingInfo();
         _inflationsPct.push(Option(inflationPct, block.timestamp));
-        _totalSupplyHistory.push(Option(0, block.timestamp));
-        _isTest = isTest_;
+        _totalSupplyHistory.push(Option(0, block.timestamp));*/
     }
 
-    function setTestTimestamp(uint timestamp) external {
-        require(_isTest);
-        _testTimestamp = timestamp;
-    }
-
-    function getYearVesting() external view returns (uint) {
+    /*function getYearVesting() external view returns (uint) {
         return _yearVestingBudget(_timestamp());
     }
 
@@ -99,163 +99,207 @@ contract CitadelVesting is Ownable {
 
     function getVestingPct() external view returns (uint) {
         return _inflationsPct[_inflationsPct.length-1].value;
+    }*/
+
+    function updateSnapshot(address account) external onlyToken {
+        _writeUserSnapshot(account);
     }
 
-    function availableVestOf(address userAddress) external view returns (uint) {
-        if (_userSnapshots[userAddress].dateUpdate == 0) return 0;
-        UserSnapshot memory snapshot = _makeUserSnapshot(userAddress);
+    function claimFor(address account) external onlyToken returns (uint amount) {
+        _writeUserSnapshot(account);
+        amount = _userSnapshots[account].vested - _userSnapshots[account].claimed;
+        require(amount > 0, "Zero amount to claim");
+        _userSnapshots[account].claimed = _userSnapshots[account].vested;
+    }
+
+    function claim() external returns (uint amount) {
+        address account = msg.sender;
+        _writeUserSnapshot(account);
+        amount = _userSnapshots[account].vested - _userSnapshots[account].claimed;
+        require(amount > 0, "Zero amount to claim");
+        _userSnapshots[account].claimed = _userSnapshots[account].vested;
+        _Token.withdraw(account, amount);
+    }
+
+    function claimable(address account) external view returns (uint) {
+        if (_userSnapshots[account].dateUpdate == 0) return 0;
+        UserSnapshot memory snapshot = _makeUserSnapshot(account);
         return snapshot.vested - snapshot.claimed;
     }
 
-    function _writeUserSnapshot(address userAddress) private {
-        _userSnapshots[userAddress] = _makeUserSnapshot(userAddress);
+    function _writeUserSnapshot(address account) private {
+        _userSnapshots[account] = _makeUserSnapshot(account);
     }
 
-    function _makeUserSnapshot(address userAddress) private view returns (UserSnapshot memory snapshot) {
-        uint frozenCurrent = _Token.lockedBalanceOf(userAddress);
-        snapshot = _cloneUserSnapshot(_userSnapshots[userAddress]);
-        if (snapshot.frozen > 0) {
-            // if we have already staked
+    function _makeUserSnapshot(address account) private view returns (UserSnapshot memory snapshot) {
+        uint frozenCurrent = _Token.lockedBalanceOf(account);
+        snapshot = _cloneUserSnapshot(_userSnapshots[account]);
 
-            // date when we started staking
-            //uint startedInflationDate = _Token.getInflationStartDate();
-            //require(startedInflationDate < block.timestamp);
-
-            // last yearly checkoint
-            uint savedInflationYear = _Token.getSavedInflationYear();
-            require(savedInflationYear < block.timestamp);
-
-            uint lastIndexInflation = _Token.countInflationPoints() - 1;
-            uint lastIndexSupplyHistory = _Token.totalSupplyHistoryCount() - 1;
-
-            (
-                uint inflationPct,
-                uint stakingPct,
-                uint currentSupply,
-                uint yearlySupply,
-                uint inflDate
-            ) = _Token.inflationPoint(snapshot.indexInflation);
-
-            (uint totalStakedSupply,) = _Token.totalSupplyHistory(snapshot.indexSupplyHistory);
-
-            if (snapshot.indexInflation == lastIndexInflation && currentSupply == _maxInflationSupply) return snapshot;
-
-            uint startGas = gasleft();
-            do {
-                // check next options
-                InflationValues memory nextInflation;
-                Option memory nextSupply;
-                uint nextCurrentSupply;
-                uint nextYearlySupply;
-                if (snapshot.indexInflation < lastIndexInflation) {
-                    (
-                        nextInflation.inflationPct,
-                        nextInflation.stakingPct,
-                        nextCurrentSupply,
-                        nextYearlySupply,
-                        nextInflation.date
-                    ) = _Token.inflationPoint(snapshot.indexInflation + 1);
-                }
-                if (snapshot.indexSupplyHistory < lastIndexSupplyHistory) {
-                    (nextSupply.value, nextSupply.date) = _Token.totalSupplyHistory(snapshot.indexSupplyHistory + 1);
-                }
-                (byte nextStep, uint time) = _findNextStep(nextInflation, nextSupply);
-                if (nextStep == NEXT_NOTHING) time = _timestamp();
-                // check new year
-                //uint happyNewYear = savedInflationYear + ((snapshot.dateUpdate - savedInflationYear) / 365 days + 1) * 365 days;
-                // save vesting inflation
-                //uint vestInflPct = _inflationsPct[snapshot.indexInflation].value;
-                // save user percent
-                //uint userPct = (snapshot.frozen * 1e15 / _totalSupplyHistory[snapshot.indexSupplyHistory].value);
-                // calculate
-                if (nextStep != NEXT_INFLATION && time - savedInflationYear >= 365 days) {
-                    savedInflationYear += 365 days;
-                    time = savedInflationYear;
-                    uint updateUnlock = yearlySupply * inflationPct * (savedInflationYear - inflDate) / 365 days / 10000;
-                    inflDate = time;
-                    if (currentSupply + updateUnlock >= _maxInflationSupply) {
-                        // rest part = (_maxInflationSupply - currentSupply) * 10000 / _maxInflationSupply; // pct
-                        // rest part of tokens = _maxInflationSupply - currentSupply;
-                        currentSupply = _maxInflationSupply;
-                        //yearlySupply = _maxInflationSupply;
-                    } else {
-                        if (inflationPct != 200) {
-                            if (inflationPct > 50 && inflationPct - 50 > 200) inflationPct -= 50; // -0.5% each year
-                            if (inflationPct < 200) inflationPct = 200; // 2% is minimum
-                        }
-                    }
-                }
-                //if (happyNewYear < time) {
-                //    time = happyNewYear;
-                //} else if (nextStep == NEXT_INFLATION) {
-                //} else if (nextStep == NEXT_SUPPLY) {
-                //}
-                
-                // перемножение
-                // 1) yearlySupply * inflationPct // vested
-                // 2) stakingPct
-                // 3) snapshot.frozen
-                // 4) time - snapshot.dateUpdate
-
-                // деление
-                // 1) 10000
-                // 2) 100
-                // 3) totalStakedSupply
-                // 4) 365 days
-
-                if (currentSupply == _maxInflationSupply) {
-                    
-                    uint upd = (currentSupply - yearlySupply) * stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                    upd = upd / totalStakedSupply / 365 days / 10000 / 100;
-
-                    snapshot.vested += upd;
-                    snapshot.dateUpdate = time;
-                    break;
-
-                }
-
-                uint upd = yearlySupply * inflationPct * stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                upd = upd / totalStakedSupply / 365 days / 10000 / 100;
-
-                snapshot.vested += upd;
-                snapshot.dateUpdate = time;
-
-                if (nextStep == NEXT_INFLATION) {
-
-                    inflationPct = nextInflation.inflationPct;
-                    stakingPct = nextInflation.stakingPct;
-                    currentSupply = nextCurrentSupply;
-                    yearlySupply = nextYearlySupply;
-                    inflDate = time;
-                    snapshot.indexInflation++;
-
-                } else if (nextStep == NEXT_SUPPLY) {
-
-                    totalStakedSupply = nextSupply.value;
-                    snapshot.indexSupplyHistory++;
-
-                }
-
-                // check gas limit
-                uint gasUsed = startGas - gasleft();
-                if (gasUsed > 200000 || block.gaslimit - 10000 < gasUsed) break;
-            } while (
-                snapshot.indexInflation < lastIndexInflation ||
-                snapshot.indexSupplyHistory < lastIndexSupplyHistory ||
-                snapshot.dateUpdate < _timestamp()
-            );
-        } else {
+        if (snapshot.frozen == 0) {
             // first staking, just fixing indexes
             snapshot.indexInflation = _Token.countInflationPoints() - 1;
             snapshot.indexSupplyHistory = _Token.totalSupplyHistoryCount() - 1;
             snapshot.dateUpdate = _timestamp();
+            snapshot.frozen = frozenCurrent;
+            return snapshot;
         }
+
+        // if we have already staked
+
+        // date when we started staking
+        //uint startedInflationDate = _Token.getInflationStartDate();
+        //require(startedInflationDate < block.timestamp);
+
+        // last yearly checkoint
+        uint savedInflationYear = _Token.getSavedInflationYear();
+        //////require(savedInflationYear < _timestamp());
+
+        uint lastIndexInflation = _Token.countInflationPoints() - 1;
+        uint lastIndexSupplyHistory = _Token.totalSupplyHistoryCount() - 1;
+
+        /*(
+            uint inflationPct,
+            uint stakingPct,
+            uint currentSupply,
+            uint yearlySupply,
+            uint inflDate
+        ) = _Token.inflationPoint(snapshot.indexInflation);*/
+        ICitadelVestingTransport.InflationPointValues memory inflPoint = _Token.inflationPoint(snapshot.indexInflation);
+
+        (uint totalStakedSupply,) = _Token.totalSupplyHistory(snapshot.indexSupplyHistory);
+
+        if (snapshot.indexInflation == lastIndexInflation && inflPoint.currentSupply == _maxInflationSupply) return snapshot;
+
+        //uint startGas = gasleft();
+        do {
+            // check next options
+            ICitadelVestingTransport.InflationPointValues memory nextInflation;
+            Option memory nextSupply;
+            //uint nextCurrentSupply;
+            //uint nextYearlySupply;
+            if (snapshot.indexInflation < lastIndexInflation) {
+                /*!!!(
+                    nextInflation.inflationPct,
+                    nextInflation.stakingPct,
+                    nextCurrentSupply,
+                    nextYearlySupply,
+                    nextInflation.date
+                ) = _Token.inflationPoint(snapshot.indexInflation + 1);*/
+                //if (snapshot.indexInflation == 15) revert("TEST");
+                nextInflation = _Token.inflationPoint(snapshot.indexInflation + 1);
+            }
+            if (snapshot.indexSupplyHistory < lastIndexSupplyHistory) {
+                (nextSupply.value, nextSupply.date) = _Token.totalSupplyHistory(snapshot.indexSupplyHistory + 1);
+            }
+            (byte nextStep, uint time) = _findNextStep(nextInflation, nextSupply);
+            if (nextStep == NEXT_NOTHING) time = _timestamp();
+            // check new year
+            //uint happyNewYear = savedInflationYear + ((snapshot.dateUpdate - savedInflationYear) / 365 days + 1) * 365 days;
+            // save vesting inflation
+            //uint vestInflPct = _inflationsPct[snapshot.indexInflation].value;
+            // save user percent
+            //uint userPct = (snapshot.frozen * 1e15 / _totalSupplyHistory[snapshot.indexSupplyHistory].value);
+            // calculate
+            if (nextStep != NEXT_INFLATION && time > savedInflationYear && time - savedInflationYear >= 365 days) {
+                nextStep = NEXT_INFLATION;
+                savedInflationYear += 365 days;
+                time = savedInflationYear;
+                uint updateUnlock = inflPoint.yearlySupply * inflPoint.inflationPct * (savedInflationYear - inflPoint.date) / 365 days / 10000;
+                inflPoint.date = savedInflationYear;
+                if (inflPoint.currentSupply + updateUnlock >= _maxInflationSupply) {
+                    // rest part = (_maxInflationSupply - currentSupply) * 10000 / _maxInflationSupply; // pct
+                    // rest part of tokens = _maxInflationSupply - currentSupply;
+                    inflPoint.currentSupply = _maxInflationSupply;
+                    //yearlySupply = _maxInflationSupply;
+                } else {
+                    /*inflPoint.yearlySupply += inflPoint.yearlySupply * inflPoint.inflationPct / 10000;
+                    if (inflPoint.inflationPct != 200) {
+                        if (inflPoint.inflationPct > 50 && inflPoint.inflationPct - 50 > 200) inflPoint.inflationPct -= 50; // -0.5% each year
+                        if (inflPoint.inflationPct < 200) inflPoint.inflationPct = 200; // 2% is minimum
+                    }*/
+                    nextInflation.currentSupply = inflPoint.currentSupply;
+                    nextInflation.stakingPct = inflPoint.stakingPct;
+                    nextInflation.yearlySupply = inflPoint.yearlySupply + inflPoint.yearlySupply * inflPoint.inflationPct / 10000;
+                    if (inflPoint.inflationPct != 200) {
+                        if (inflPoint.inflationPct > 50 && inflPoint.inflationPct - 50 > 200) nextInflation.inflationPct = inflPoint.inflationPct - 50; // -0.5% each year
+                        if (inflPoint.inflationPct < 200) nextInflation.inflationPct = 200; // 2% is minimum
+                    } else {
+                        nextInflation.inflationPct = inflPoint.inflationPct;
+                    }
+                }
+            }
+            
+            // перемножение
+            // 1) yearlySupply * inflationPct // vested
+            // 2) stakingPct
+            // 3) snapshot.frozen
+            // 4) time - snapshot.dateUpdate
+
+            // деление
+            // 1) 10000
+            // 2) 100
+            // 3) totalStakedSupply
+            // 4) 365 days
+
+            if (inflPoint.currentSupply == _maxInflationSupply) {
+                
+                uint upd = (inflPoint.currentSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
+                upd = upd / totalStakedSupply / 365 days / 100;
+
+                //revert(uint2str(upd));
+
+                snapshot.vested += upd;
+
+                //revert(uint2str(snapshot.vested));
+
+                snapshot.dateUpdate = time;
+                break;
+
+            }
+
+            uint upd;
+            if (inflPoint.inflationPct < 200) {
+                upd = (_maxInflationSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
+                upd = upd / totalStakedSupply / 365 days / 100;
+            } else {
+                upd = inflPoint.yearlySupply * inflPoint.inflationPct * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
+                upd = upd / totalStakedSupply / 365 days / 10000 / 100;
+            }
+            
+            snapshot.vested += upd;
+            snapshot.dateUpdate = time;
+
+            if (nextStep == NEXT_INFLATION) {
+                //if (snapshot.indexInflation == 15) revert(uint2str(upd));
+
+                inflPoint.inflationPct = nextInflation.inflationPct;
+                inflPoint.stakingPct = nextInflation.stakingPct;
+                inflPoint.currentSupply = nextInflation.currentSupply;
+                inflPoint.yearlySupply = nextInflation.yearlySupply;
+                inflPoint.date = time;
+                snapshot.indexInflation++;
+
+            } else if (nextStep == NEXT_SUPPLY) {
+
+                totalStakedSupply = nextSupply.value;
+                snapshot.indexSupplyHistory++;
+
+            }
+
+            // check gas limit
+            //uint gasUsed = startGas - gasleft();
+            if (block.gaslimit - 30000 < gasleft()) break;
+        } while (
+            snapshot.indexInflation < lastIndexInflation ||
+            snapshot.indexSupplyHistory < lastIndexSupplyHistory ||
+            snapshot.dateUpdate < _timestamp()
+        );
         // final update
         snapshot.frozen = frozenCurrent;
     }
 
     function _findNextStep(
-        InflationValues memory nextInflation,
+        ICitadelVestingTransport.InflationPointValues memory nextInflation,
         Option memory nextSupply
     ) private pure returns (byte lastByte, uint minDate) {
 
@@ -275,6 +319,28 @@ contract CitadelVesting is Ownable {
 
     }
 
+    function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint j = _i;
+        uint len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint k = len;
+        while (_i != 0) {
+            k = k-1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
+        }
+        return string(bstr);
+    }
+
     function _cloneUserSnapshot(UserSnapshot memory snapshot) private pure returns (UserSnapshot memory) {
         return UserSnapshot(
             snapshot.indexInflation,
@@ -286,12 +352,8 @@ contract CitadelVesting is Ownable {
         );
     }
 
-    function _timestamp() private view returns (uint) {
-        if (_isTest && _testTimestamp > 0) {
-            return _testTimestamp;
-        } else {
-            return block.timestamp;
-        }
+    function _timestamp() internal virtual view returns (uint) {
+        return block.timestamp;
     }
 
     function version() external pure returns (string memory) {

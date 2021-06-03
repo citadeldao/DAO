@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.2;
+pragma experimental ABIEncoderV2;
 
 import "./CitadelInflation.sol";
 import "../ICitadelVesting.sol";
@@ -49,37 +50,61 @@ contract CitadelTokenLocker is CitadelInflation {
         date = _lockedCoinsHistory[addr][index].date;
     }
 
-    function lockCoins(uint256 amount) external {
+    function stake(uint amount) external activeInflation {
+        
+        _makeInflationSnapshot();
 
         _transfer(msg.sender, _lockerAddress, amount);
         lockedCoins[msg.sender] = lockedCoins[msg.sender].add(amount);
         // put mark in history
-        _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), block.timestamp));
-        _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], block.timestamp));
+        _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), _timestamp()));
+        _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], _timestamp()));
         // ...
-        _Vesting.userFrozeCoins(msg.sender);
+        _Vesting.updateSnapshot(msg.sender);
 
     }
 
-    function unlockCoins(uint256 amount) external {
+    function unstake(uint amount) external activeInflation {
 
-        _transfer(_lockerAddress, msg.sender, amount);
+        require(lockedCoins[msg.sender] >= amount);
+
+        _makeInflationSnapshot();
+
+        _transfer(_lockerAddress, msg.sender, amount); // remove
         lockedCoins[msg.sender] = lockedCoins[msg.sender].sub(amount);
         // put mark in history
-        _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), block.timestamp));
-        _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], block.timestamp));
+        _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), _timestamp()));
+        _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], _timestamp()));
         // ...
-        _Vesting.userUnfrozeCoins(msg.sender);
+        _Vesting.updateSnapshot(msg.sender);
 
     }
 
-    function lockedBalanceOf(address account) external view returns (uint256) {
+    function restake() external activeInflation {
+        
+        uint amount = _Vesting.claimFor(msg.sender);
+
+        require(amount > 0);
+
+        _makeInflationSnapshot();
+        _transfer(address(1), _lockerAddress, amount);
+        
+        lockedCoins[msg.sender] = lockedCoins[msg.sender].add(amount);
+        // put mark in history
+        _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), _timestamp()));
+        _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], _timestamp()));
+        // ...
+        _Vesting.updateSnapshot(msg.sender);
+
+    }
+
+    function lockedBalanceOf(address account) external view returns (uint) {
 
         return lockedCoins[account];
 
     }
 
-    function lockedSupply() external view returns (uint256) {
+    function lockedSupply() external view returns (uint) {
 
         return _lockedTotalSupply();
 

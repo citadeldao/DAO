@@ -8,27 +8,27 @@ import "./Token/CitadelDaoTransport.sol";
 
 contract Citadel is CitadelDaoTransport {
 
-    struct MultisigData {
+    /*struct MultisigData {
         bytes4 id;
         address[] whitelist;
         uint threshold;
-    }
+    }*/
 
     constructor (
-        MultisigData[] memory multisigs,
+        //MultisigData[] memory multisigs,
         uint initialSupply
     )
     public {
-        for (uint i = 0; i < multisigs.length; i++) {
+        /*for (uint i = 0; i < multisigs.length; i++) {
             MultisigData memory ms = multisigs[i];
             _initMultisigWhitelist(ms.id, ms.whitelist, ms.threshold);
-        }
+        }*/
 
         // mint inflation
         uint inflation = uint(500000000).mul(1e6);
         _mint(address(1), inflation);
 
-        //initialSupply = initialSupply.mul(1e6);
+        initialSupply = initialSupply.mul(1e6);
         
         //_mint(_bankAddress, initialSupply.mul(10).div(100));
 
@@ -41,7 +41,7 @@ contract Citadel is CitadelDaoTransport {
         //_mint(address(3), vestingBudget.mul(60).div(100));
         //_mint(address(4), vestingBudget.mul(40).div(100));
 
-        _initCitadelTokenLocker(address(5));
+        _initCitadelTokenLocker(address(2));
 
         //value = initialSupply.mul(15).div(100);
         //publicSaleLimit = publicSaleLimit.sub(value);
@@ -53,6 +53,7 @@ contract Citadel is CitadelDaoTransport {
         //_initInvestors(address(7), value, _investorsUnlockPct);
         //_mint(address(7), value);
 
+    /*
         // mint team
         _mint(address(this), uint(147250000).mul(1e6));
 
@@ -76,6 +77,9 @@ contract Citadel is CitadelDaoTransport {
 
         // mint public & market sale
         _mint(address(this), uint(12500000).mul(1e6));
+    */
+
+        _mint(address(this), uint(500000000).mul(1e6));
 
         assert(totalSupply() == initialSupply);
 

@@ -1,4 +1,4 @@
-const Citadel = artifacts.require("Citadel");
+const Citadel = artifacts.require("CitadelTest");
 const CitadelUnlockTeam = artifacts.require("CitadelUnlockTeam");
 const CitadelUnlockAdvisors = artifacts.require("CitadelUnlockAdvisors");
 const CitadelUnlockPrivate1 = artifacts.require("CitadelUnlockPrivate1");
@@ -7,7 +7,8 @@ const CitadelUnlockEcoFund = artifacts.require("CitadelUnlockEcoFund");
 const CitadelUnlockFoundFund = artifacts.require("CitadelUnlockFoundFund");
 const CitadelUnlockCommFund = artifacts.require("CitadelUnlockCommFund");
 const CitadelDao = artifacts.require("CitadelDao");
-const CitadelVesting = artifacts.require("CitadelVesting");
+//const CitadelVesting = artifacts.require("CitadelVesting");
+const CitadelRewards = artifacts.require("CitadelRewardsTest");
 
 // https://feeds.chain.link/usdt-eth
 // oracul: https://etherscan.io/address/0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46
@@ -28,24 +29,6 @@ module.exports = async function(deployer) {
 
     deployer.deploy(
         Citadel,
-        [ // multisigs
-            {
-                id: web3.utils.toHex('FF'),
-                whitelist: [
-                    '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
-                    '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61'
-                ],
-                threshold: 2
-            },
-            {
-                id: web3.utils.toHex('CF'),
-                whitelist: [
-                    '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
-                    '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61'
-                ],
-                threshold: 2
-            }
-        ],
         1000000000, // initialSupply
     ).then(async function(instance){
 
@@ -238,16 +221,15 @@ module.exports = async function(deployer) {
         await TokenInstance.initDaoTransport.sendTransaction(DaoInstance.address);
 
         return deployer.deploy(
-            CitadelVesting,
-            TokenInstance.address,
-            true
+            CitadelRewards,
+            TokenInstance.address
         );
     }).then(async function(instance){
         VestingInstance = instance;
 
         await TokenInstance.initVestingTransport.sendTransaction(VestingInstance.address);
 
-        await VestingInstance.renounceOwnership.sendTransaction();
+        // await VestingInstance.renounceOwnership.sendTransaction();
 
     });
 

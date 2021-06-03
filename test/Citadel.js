@@ -36,8 +36,6 @@ contract('Citadel', function(accounts){
 
 })
 
-return;
-
 contract('ERC20 methods', function(accounts){
 
     it("Transfer", async function() {
@@ -45,7 +43,7 @@ contract('ERC20 methods', function(accounts){
         const instance = await Citadel.deployed();
 
         await new Promise(_ => setTimeout(_, 3000));
-        await instance.claimTeam.sendTransaction(100);
+        await instance.delegateTokens.sendTransaction(accounts[0], 100);
 
         const value = 10;
 
@@ -58,6 +56,25 @@ contract('ERC20 methods', function(accounts){
         assert.equal(
             reciever_balance_after,
             reciever_balance_before + value
+        );
+
+    });
+
+    it("Burn", async function() {
+
+        const instance = await Citadel.deployed();
+
+        const value = 10;
+
+        let balance_before = (await instance.balanceOf.call(accounts[0])).toNumber();
+
+        await instance.burn.sendTransaction(value);
+
+        let balance_after = (await instance.balanceOf.call(accounts[0])).toNumber();
+
+        assert.equal(
+            balance_after,
+            balance_before - value
         );
 
     });
@@ -80,78 +97,6 @@ contract('ERC20 methods', function(accounts){
         );
 
     });
-
-})
-
-contract('Multisig', function(accounts){
-
-    const idFF = web3.utils.toHex('FF');
-
-    it("No access for outsiders", async function(){
-        const instance = await Citadel.deployed();
-        try {
-            await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
-        } catch(e) {
-            assert(true);
-            return;
-        }
-        assert(false);
-    })
-
-    it("Length of whitelist", async function(){
-        const instance = await Citadel.deployed();
-        assert.equal(
-            (await instance.multisigWhitelist.call(idFF)).length,
-            2
-        )
-    })
-
-    it("Add one more to the whitelist", async function(){
-        const instance = await Citadel.deployed();
-
-        await instance.multisigWhitelistAdd.sendTransaction(idFF, accounts[2]);
-        await instance.multisigWhitelistAdd.sendTransaction(idFF, accounts[2]); // self-repeated
-
-        try {
-            await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
-        } catch(e) {
-
-            await instance.multisigWhitelistAdd.sendTransaction(idFF, accounts[2], {from: accounts[1]});
-
-            assert.equal(
-                (await instance.multisigWhitelist.call(idFF, {from: accounts[2]})).length,
-                3
-            )
-            return;
-
-        }
-        assert(false, "Only one signature was used");
-    })
-
-    it("Remove one from the whitelist", async function(){
-        const instance = await Citadel.deployed();
-
-        await instance.multisigWhitelistRemove.sendTransaction(idFF, accounts[2]);
-
-        try {
-            await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
-
-            await instance.multisigWhitelistRemove.sendTransaction(idFF, accounts[2], {from: accounts[1]});
-
-            try {
-                await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
-            } catch(e) {
-                assert.equal(
-                    (await instance.multisigWhitelist.call(idFF)).length,
-                    2
-                )
-                return;
-            }
-            assert(false, "Account hadn't been removed");
-        } catch(e) {
-            assert(false, "Only one signature was used");
-        }
-    })
 
 })
 
@@ -184,6 +129,44 @@ contract('CitadelInflation', function(accounts){
             point.date.toNumber() > 0,
             true,
             "date"
+        )
+    })
+
+})
+
+
+contract('CitadelTokenLocker', function(accounts){
+
+    it("lockCoins", async function() {
+        const instance = await Citadel.deployed();
+        await new Promise(_ => setTimeout(_, 2000));
+        await instance.claimTeam.sendTransaction(100);
+
+        await instance.lockCoins.sendTransaction(10);
+        assert.equal(
+            (await instance.lockedBalanceOf.call(accounts[0])).toNumber(),
+            10
+        )
+    })
+
+    it("lockedSupply", async function() {
+        const instance = await Citadel.deployed();
+        assert.equal(
+            (await instance.lockedSupply.call()).toNumber(),
+            10
+        )
+    })
+
+    it("unlockCoins", async function() {
+        const instance = await Citadel.deployed();
+        await instance.unlockCoins.sendTransaction(10);
+        assert.equal(
+            (await instance.lockedBalanceOf.call(accounts[0])).toNumber(),
+            0
+        )
+        assert.equal(
+            (await instance.lockedSupply.call()).toNumber(),
+            0
         )
     })
 
@@ -384,39 +367,74 @@ contract('CitadelInvestors', function(accounts){
 
 })
 
-contract('CitadelTokenLocker', function(accounts){
+contract('Multisig', function(accounts){
 
-    it("lockCoins", async function() {
+    const idFF = web3.utils.toHex('FF');
+
+    it("No access for outsiders", async function(){
         const instance = await Citadel.deployed();
-        await new Promise(_ => setTimeout(_, 2000));
-        await instance.claimTeam.sendTransaction(100);
+        try {
+            await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
+        } catch(e) {
+            assert(true);
+            return;
+        }
+        assert(false);
+    })
 
-        await instance.lockCoins.sendTransaction(10);
+    it("Length of whitelist", async function(){
+        const instance = await Citadel.deployed();
         assert.equal(
-            (await instance.lockedBalanceOf.call(accounts[0])).toNumber(),
-            10
+            (await instance.multisigWhitelist.call(idFF)).length,
+            2
         )
     })
 
-    it("lockedSupply", async function() {
+    it("Add one more to the whitelist", async function(){
         const instance = await Citadel.deployed();
-        assert.equal(
-            (await instance.lockedSupply.call()).toNumber(),
-            10
-        )
+
+        await instance.multisigWhitelistAdd.sendTransaction(idFF, accounts[2]);
+        await instance.multisigWhitelistAdd.sendTransaction(idFF, accounts[2]); // self-repeated
+
+        try {
+            await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
+        } catch(e) {
+
+            await instance.multisigWhitelistAdd.sendTransaction(idFF, accounts[2], {from: accounts[1]});
+
+            assert.equal(
+                (await instance.multisigWhitelist.call(idFF, {from: accounts[2]})).length,
+                3
+            )
+            return;
+
+        }
+        assert(false, "Only one signature was used");
     })
 
-    it("unlockCoins", async function() {
+    it("Remove one from the whitelist", async function(){
         const instance = await Citadel.deployed();
-        await instance.unlockCoins.sendTransaction(10);
-        assert.equal(
-            (await instance.lockedBalanceOf.call(accounts[0])).toNumber(),
-            0
-        )
-        assert.equal(
-            (await instance.lockedSupply.call()).toNumber(),
-            0
-        )
+
+        await instance.multisigWhitelistRemove.sendTransaction(idFF, accounts[2]);
+
+        try {
+            await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
+
+            await instance.multisigWhitelistRemove.sendTransaction(idFF, accounts[2], {from: accounts[1]});
+
+            try {
+                await instance.multisigWhitelist.call(idFF, {from: accounts[2]});
+            } catch(e) {
+                assert.equal(
+                    (await instance.multisigWhitelist.call(idFF)).length,
+                    2
+                )
+                return;
+            }
+            assert(false, "Account hadn't been removed");
+        } catch(e) {
+            assert(false, "Only one signature was used");
+        }
     })
 
 })
