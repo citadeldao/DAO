@@ -22,4 +22,8 @@ contract Managing is Ownable, AccessControl {
         _setupRole(ADMIN_ROLE, account);
     }
 
+    function _timestamp() internal virtual view returns (uint) {
+        return block.timestamp;
+    }
+
 }

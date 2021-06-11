@@ -6,7 +6,7 @@ const CitadelUnlockPrivate2 = artifacts.require("CitadelUnlockPrivate2");
 const CitadelUnlockEcoFund = artifacts.require("CitadelUnlockEcoFund");
 const CitadelUnlockFoundFund = artifacts.require("CitadelUnlockFoundFund");
 const CitadelUnlockCommFund = artifacts.require("CitadelUnlockCommFund");
-const CitadelDao = artifacts.require("CitadelDao");
+const CitadelDao = artifacts.require("CitadelDaoTest");
 //const CitadelVesting = artifacts.require("CitadelVesting");
 const CitadelRewards = artifacts.require("CitadelRewardsTest");
 

@@ -2,18 +2,19 @@
 pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
+import "./CitadelDao.sol";
 
-import "./Citadel.sol";
 
-
-contract CitadelTest is Citadel {
+contract CitadelDaoTest is CitadelDao {
 
     uint private _fakeTime;
 
     constructor (
-        uint initialSupply
+        address addressOfToken
     )
-    Citadel(initialSupply)
+    CitadelDao(
+        addressOfToken
+    )
     public {
         _fakeTime = block.timestamp;
     }
@@ -25,11 +26,4 @@ contract CitadelTest is Citadel {
     function _timestamp() internal override view returns (uint) {
         return _fakeTime;
     }
-
-    function setInflation(uint pct) external onlyOwner {
-        require(pct >= 200 && pct <= 3000, "Percentage must be between 2% and 30%");
-        _makeInflationSnapshot();
-        _updateInflation(pct);
-    }
-
 }

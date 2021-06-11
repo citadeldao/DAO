@@ -1,16 +1,13 @@
-const BN = require('bignumber.js');
+const Citadel = artifacts.require('CitadelTest');
+const CitadelRewards = artifacts.require('CitadelRewardsTest');
 
-const Citadel = artifacts.require("CitadelTest");
-const CitadelDao = artifacts.require("CitadelDao");
-const CitadelRewards = artifacts.require("CitadelRewardsTest");
-
-let tokenMultiplier = 10 ** 6;
+const tokenMultiplier = 10 ** 6;
 
 function days(n){
     return n * 86400;
 }
 
-contract("CitadelVesting", function(accounts){
+contract('CitadelVesting', function(accounts){
 
     let TokenInstance, RewardsInstance, deployed, time;
 
@@ -104,10 +101,6 @@ contract("CitadelVesting", function(accounts){
         await TokenInstance.stake.sendTransaction(staked0 - totalStaked0);
         totalStaked0 = staked0;
 
-        //const staked1 = 2000 * tokenMultiplier;
-        //await TokenInstance.stake.sendTransaction(staked1 - totalStaked1, { from: accounts[1] });
-        //totalStaked1 = staked1;
-
         time += days(90);
         await updateTimestamp(time);
 
@@ -125,10 +118,6 @@ contract("CitadelVesting", function(accounts){
         const staked0 = 1_125 * tokenMultiplier;
         await TokenInstance.stake.sendTransaction(staked0 - totalStaked0);
         totalStaked0 = staked0;
-
-        //const staked1 = 2000 * tokenMultiplier;
-        //await TokenInstance.stake.sendTransaction(staked1 - totalStaked1, { from: accounts[1] });
-        //totalStaked1 = staked1;
 
         time += days(40);
         await updateTimestamp(time);
@@ -319,13 +308,13 @@ contract("CitadelVesting", function(accounts){
         assert.equal(
             inflation.inflationPct,
             '900',
-            'Inflation'
+            'Incorrect inflation'
         )
 
         assert.equal(
             inflation.date,
             time.toString(),
-            'Date update'
+            'Incorrect date'
         )
 
     })
@@ -501,7 +490,7 @@ contract("CitadelVesting", function(accounts){
         assert.equal(
             claimable1_after,
             0,
-            'Claimable isn\'t zero'
+            "Claimable isn't zero"
         )
 
         assert.equal(
@@ -644,13 +633,13 @@ contract("CitadelVesting", function(accounts){
         assert.equal(
             inflation.inflationPct,
             '200',
-            'Inflation'
+            'Incorrect inflation'
         )
 
         assert.equal(
             inflation.date,
             time.toString(),
-            'Date update'
+            'Incorrect date'
         )
 
     })

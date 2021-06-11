@@ -42,6 +42,13 @@ contract CitadelUnlockPrivate1 is Ownable {
         return address(token);
     }
 
+    function balanceOf (address _address) external view 
+    returns (uint totalAmount, uint pending, uint used) {
+        totalAmount = list[_address].total;
+        used = list[_address].used;
+        pending = _calcUnlockAmount(_address, int(test_date > 0 ? test_date : block.timestamp) - int(token_deployed));
+    }
+
     function calcUnlockOfTest (address _address, uint _testdate) external view returns (uint) {
         return _calcUnlockAmount(_address, int(_testdate) - int(token_deployed));
     }

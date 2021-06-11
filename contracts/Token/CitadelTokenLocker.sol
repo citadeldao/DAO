@@ -3,7 +3,6 @@ pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "./CitadelInflation.sol";
-import "../ICitadelVesting.sol";
 
 contract CitadelTokenLocker is CitadelInflation {
 
@@ -12,13 +11,20 @@ contract CitadelTokenLocker is CitadelInflation {
         uint date;
     }
 
-    ICitadelVesting private _Vesting;
-    mapping (address => uint256) public lockedCoins;
+    mapping (address => uint) public lockedCoins;
+
     bool private _isInitialized;
     address private _lockerAddress;
-
     HistoryItem[] private _totalLockedSupplyHistory;
     mapping (address => HistoryItem[]) private _lockedCoinsHistory;
+
+    function lockedBalanceOf(address account) external view returns (uint) {
+        return lockedCoins[account];
+    }
+
+    function lockedSupply() external view returns (uint) {
+        return _lockedTotalSupply();
+    }
 
     function totalSupplyHistoryCount() external view
     returns (uint) {
@@ -60,7 +66,7 @@ contract CitadelTokenLocker is CitadelInflation {
         _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), _timestamp()));
         _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], _timestamp()));
         // ...
-        _Vesting.updateSnapshot(msg.sender);
+        stakeUpdated();
 
     }
 
@@ -70,17 +76,19 @@ contract CitadelTokenLocker is CitadelInflation {
 
         _makeInflationSnapshot();
 
-        _transfer(_lockerAddress, msg.sender, amount); // remove
+        _transfer(_lockerAddress, msg.sender, amount);
         lockedCoins[msg.sender] = lockedCoins[msg.sender].sub(amount);
         // put mark in history
         _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), _timestamp()));
         _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], _timestamp()));
         // ...
-        _Vesting.updateSnapshot(msg.sender);
+        stakeUpdated();
 
     }
 
     function restake() external activeInflation {
+
+        require(address(_Vesting) != address(0), "CitadelTokenLocker: vesting contract undefined");
         
         uint amount = _Vesting.claimFor(msg.sender);
 
@@ -94,38 +102,17 @@ contract CitadelTokenLocker is CitadelInflation {
         _totalLockedSupplyHistory.push(HistoryItem(_lockedTotalSupply(), _timestamp()));
         _lockedCoinsHistory[msg.sender].push(HistoryItem(lockedCoins[msg.sender], _timestamp()));
         // ...
-        _Vesting.updateSnapshot(msg.sender);
+        stakeUpdated();
 
     }
 
-    function lockedBalanceOf(address account) external view returns (uint) {
-
-        return lockedCoins[account];
-
-    }
-
-    function lockedSupply() external view returns (uint) {
-
-        return _lockedTotalSupply();
-
-    }
-
-    function _lockedTotalSupply() private view returns (uint256) {
-
-        return balanceOf(_lockerAddress);
-
-    }
-
-    function initVestingTransport(address vestAddress) external onlyOwner {
-        _Vesting = ICitadelVesting(vestAddress);
-    }
-
-    function getVestingAddress() external view returns (address) {
-        return address(_Vesting);
-    }
-
-    function _updatedInflationRatio(uint vestingPct) internal override {
-        _Vesting.updateInflationPct(vestingPct);
+    function stakeUpdated() internal virtual {
+        if (address(_dao) != address(0)) {
+            _dao.updatedStake(msg.sender);
+        }
+        if (address(_Vesting) != address(0)) {
+            _Vesting.updateSnapshot(msg.sender);
+        }
     }
 
     function _initCitadelTokenLocker(address lockerAddress_) internal {
@@ -135,6 +122,10 @@ contract CitadelTokenLocker is CitadelInflation {
         _isInitialized = true;
         _lockerAddress = lockerAddress_;
 
+    }
+
+    function _lockedTotalSupply() private view returns (uint) {
+        return balanceOf(_lockerAddress);
     }
 
 }

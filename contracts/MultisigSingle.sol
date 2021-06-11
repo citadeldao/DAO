@@ -11,9 +11,9 @@ contract MultisigSingle {
         address[] sigs;
     }
 
+    mapping (address => bool) public _whitelist;
     uint private _id;
     uint private _threshold;
-    mapping (address => bool) public _whitelist;
     address[] private _whitelistArr;
     mapping (bytes4 => SigProcess) private _processing;
 

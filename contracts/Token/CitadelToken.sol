@@ -5,7 +5,8 @@ pragma experimental ABIEncoderV2;
 import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "../../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
 import "../../node_modules/openzeppelin-solidity/contracts/utils/Pausable.sol";
-//import "../Multisig.sol";
+import "../ICitadelVesting.sol";
+import "../ICitadelDao.sol";
 
 
 contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
@@ -13,6 +14,26 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
     address public _bankAddress;
     uint public deployDate;
     uint public percentDecimal;
+
+    ICitadelVesting internal _Vesting;
+    ICitadelDao internal _dao;
+    address constant internal addressForDelegations = address(10);
+    mapping (address => uint) private _delegated;
+
+    modifier onlyVestingContract() {
+        require(msg.sender == address(_Vesting));
+        _;
+    }
+
+    modifier onlyDaoContract() {
+        require(msg.sender == address(_dao));
+        _;
+    }
+
+    modifier onlyVestingOrDaoContracts() {
+        require(msg.sender == address(_Vesting) || msg.sender == address(_dao));
+        _;
+    }
 
     constructor () public {
 
@@ -34,11 +55,30 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
         _burn(msg.sender, amount);
     }
 
-    function _lifeYears(uint time) internal view returns (uint) {
-        uint lastYears = time.sub(deployDate).mul(1e10).div(365 days);
-        if (lastYears > 0 && lastYears % 1e10 == 0) lastYears = lastYears.sub(1e9);
-        lastYears = lastYears.div(1e10);
-        return lastYears;
+    function initVestingTransport(address vestAddress) external onlyOwner {
+        _Vesting = ICitadelVesting(vestAddress);
+    }
+
+    function getVestingAddress() external view returns (address) {
+        return address(_Vesting);
+    }
+
+    function initDaoTransport(address daoAddress) external onlyOwner {
+        _dao = ICitadelDao(daoAddress);
+    }
+
+    function getDaoAddress() external view returns (address) {
+        return address(_dao);
+    }
+
+    function delegateToDAO(address from, uint amount) external onlyDaoContract {
+        _transfer(from, addressForDelegations, amount);
+        _delegated[from] = _delegated[from].add(amount);
+    }
+
+    function redeemFromDAO(address to, uint amount) external onlyDaoContract {
+        _transfer(addressForDelegations, to, amount);
+        _delegated[to] = _delegated[to].sub(amount);
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {

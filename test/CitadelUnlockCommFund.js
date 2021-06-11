@@ -1,17 +1,14 @@
-const BN = require('bignumber.js');
-const Citadel = artifacts.require("Citadel");
-const CitadelUnlockCommFund = artifacts.require("CitadelUnlockCommFund");
+const Citadel = artifacts.require('CitadelTest');
+const CitadelUnlockCommFund = artifacts.require('CitadelUnlockCommFund');
 
 const tokenMultiplier = 1e6;
 const totalSupply = 50_000_000 * tokenMultiplier;
 
 let deployedDate = 0;
 
-return;
-
 contract('CitadelUnlockCommFund', function(accounts){
 
-    it("Balance of CitadelUnlockCommFund", async function() {
+    it('Balance of CitadelUnlockCommFund', async function() {
         const instance = await Citadel.deployed();
         deployedDate = (await instance.deployed.call()).toNumber();
         assert.equal(
@@ -20,15 +17,15 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Set budget of CitadelUnlockCommFund", async function() {
+    it('Set budget of CitadelUnlockCommFund', async function() {
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
-            (await instance.getBudget.call()).toNumber(),
+            (await instance.getBudget.call()).totalAmount.toNumber(),
             totalSupply
         )
     })
 
-    it("Unlocked amount (immediately)", async function() {
+    it('Unlocked amount (immediately)', async function() {
         const date = deployedDate;
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
@@ -37,7 +34,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Unlocked amount (60 days)", async function() {
+    it('Unlocked amount (60 days)', async function() {
         const date = deployedDate + 3600 * 24 * 60;
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
@@ -46,7 +43,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Unlocked amount (1 year)", async function() {
+    it('Unlocked amount (1 year)', async function() {
         const date = deployedDate + 3600 * 24 * 365;
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
@@ -55,7 +52,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Unlocked amount (2 years)", async function() {
+    it('Unlocked amount (2 years)', async function() {
         const date = deployedDate + 3600 * 24 * 365 * 2;
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
@@ -64,7 +61,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Unlocked amount (3 years)", async function() {
+    it('Unlocked amount (3 years)', async function() {
         const date = deployedDate + 3600 * 24 * 365 * 3;
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
@@ -73,7 +70,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Unlocked amount (4 years)", async function() {
+    it('Unlocked amount (4 years)', async function() {
         const date = deployedDate + 3600 * 24 * 365 * 4;
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
@@ -82,7 +79,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Unlocked amount (5 years)", async function() {
+    it('Unlocked amount (5 years)', async function() {
         const date = deployedDate + 3600 * 24 * 365 * 5;
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
@@ -93,7 +90,7 @@ contract('CitadelUnlockCommFund', function(accounts){
 
     const testAmount = 3_963.72375 * tokenMultiplier;
 
-    it("Unlocked amount (10k sec preset time for zero address)", async function() {
+    it('Unlocked amount (10k sec preset time for zero address)', async function() {
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
             (await instance.calcUnlock.call()).toNumber(),
@@ -101,7 +98,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Transfer unlocked amount", async function() {
+    it('Transfer unlocked amount', async function() {
         const tokenInstance = await Citadel.deployed();
         const instance = await CitadelUnlockCommFund.deployed();
         let balance = (await tokenInstance.balanceOf.call(accounts[0])).toNumber();
@@ -118,7 +115,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Post-claim unlocked amount", async function() {
+    it('Post-claim unlocked amount', async function() {
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
             (await instance.calcUnlock.call()).toNumber(),
@@ -126,7 +123,7 @@ contract('CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Decreased balance of CitadelUnlockCommFund", async function() {
+    it('Decreased balance of CitadelUnlockCommFund', async function() {
         const instance = await Citadel.deployed();
         deployedDate = (await instance.deployed.call()).toNumber();
         assert.equal(
@@ -139,7 +136,7 @@ contract('CitadelUnlockCommFund', function(accounts){
 
 contract('Multisig in CitadelUnlockCommFund', function(accounts){
 
-    it("No access for outsiders", async function(){
+    it('No access for outsiders', async function(){
         const instance = await CitadelUnlockCommFund.deployed();
         try {
             await instance.multisigWhitelistAdd.sendTransaction(accounts[3], {from: accounts[3]});
@@ -150,7 +147,7 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
         assert(false);
     })
 
-    it("Length of whitelist", async function(){
+    it('Length of whitelist', async function(){
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
             (await instance.multisigWhitelist.call()).length,
@@ -158,7 +155,7 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
         )
     })
 
-    it("Add one more to the whitelist", async function(){
+    it('Add one more to the whitelist', async function(){
         const instance = await CitadelUnlockCommFund.deployed();
 
         await instance.multisigWhitelistAdd.sendTransaction(accounts[3]);
@@ -175,10 +172,10 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
             return;
 
         }
-        assert(false, "Only one signature was used");
+        assert(false, 'Only one signature was used');
     })
 
-    it("Remove one from the whitelist", async function(){
+    it('Remove one from the whitelist', async function(){
         const instance = await CitadelUnlockCommFund.deployed();
 
         await instance.multisigWhitelistRemove.sendTransaction(accounts[3]);
@@ -194,7 +191,7 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
             )
 
         } else {
-            assert(false, "Only one signature was used");
+            assert(false, 'Only one signature was used');
         }
     })
 

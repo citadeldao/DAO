@@ -32,8 +32,11 @@ contract CitadelUnlockCommFund is MultisigSingle, Ownable {
         test_date = _test_date;
     }
 
-    function getBudget () external view returns (uint) {
-        return total;
+    function getBudget () external view 
+    returns (uint totalAmount, uint usedAmount, uint pending) {
+        totalAmount = total;
+        usedAmount = used;
+        pending = _calcUnlockAmount(int(test_date > 0 ? test_date : block.timestamp) - int(token_deployed));
     }
 
     function getTokenAddress () external view returns (address) {

@@ -10,40 +10,37 @@ contract Rewarding is Voting {
 
     address private _verifyRewardAddress;
 
-    mapping (address => uint) private _logs;
+    mapping (address => uint) private _nonces;
 
-    event ClaimStakingReward(address indexed recipient, uint256 amount);
+    event ClaimStakingReward(address indexed recipient, uint amount);
 
     function setRewardAddress(address rewardAddress) external onlyOwner {
         _verifyRewardAddress = rewardAddress;
     }
 
     function claimReward(
-        uint256 reward,
-        uint256 timestamp,
+        uint reward,
+        uint nonceId,
         bytes32 hash,
         bytes calldata signature
     ) external returns (bool) {
-        uint to = 90;
-        require(timestamp < block.timestamp, "Rewarding: incorrect timestamp");
-        require(block.timestamp - timestamp < to, "Rewarding: expiried");
-        require(block.timestamp - _logs[msg.sender] > to, "Rewarding: freeze period");
-        require(verifyReward(reward, timestamp, hash, signature), "Rewarding: incorrect signature");
-        _logs[msg.sender] = block.timestamp;
-        _Token.transferStakingRewards(msg.sender, reward);
+        require(nonceId == _nonces[msg.sender], "Rewarding: incorrect nonceId");
+        require(verifyReward(reward, nonceId, hash, signature), "Rewarding: incorrect signature");
+        _nonces[msg.sender]++;
+        _Token.withdraw(msg.sender, reward);
         emit ClaimStakingReward(msg.sender, reward);
         return true;
     }
 
     function verifyReward(
-        uint256 reward,
-        uint256 timestamp,
+        uint reward,
+        uint nonceId,
         bytes32 hash,
         bytes memory signature
     )
     internal view
     returns (bool) {
-        bytes32 verifyHash = keccak256(abi.encodePacked(msg.sender, reward, timestamp));
+        bytes32 verifyHash = keccak256(abi.encodePacked(msg.sender, reward, nonceId));
         require(hash == verifyHash, "Rewarding: incorrect hash");
         return ECDSA.recover(hash, signature) == _verifyRewardAddress;
     }
