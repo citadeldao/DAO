@@ -180,26 +180,6 @@ contract Voting is Managing {
         return _countProposals;
     }
 
-    function vote(uint issueId, bytes4 option) external
-    hasProposal(issueId)// override
-    returns (bool) {
-        bytes4 yea = bytes4("yea");
-        bytes4 nay = bytes4("nay");
-        require(option == yea || option == nay, "Voting: you should say yea or nay");
-        require(_proposals[issueId].votingType == ProposalType.Native, "Voting: please choose an option by index");
-        uint optionId = 0;
-        if (option == yea) optionId = 1;
-        return _vote(issueId, optionId);
-    }
-
-    function vote(uint issueId, uint option) external
-    hasProposal(issueId)// override
-    returns (bool) {
-        Proposal memory proposal = _proposals[issueId];
-        require(proposal.options.length > option, "Voting: out of indexes");
-        return _vote(issueId, option);
-    }
-
     function issueDescription(uint256 issueId) external view
     hasProposal(issueId)// override
     returns (string memory) {
@@ -368,6 +348,26 @@ contract Voting is Managing {
         }
 
         emit NewProposal(_countProposals, msg.sender, ProposalType.Multi, votingUpdater);
+    }
+
+    function vote(uint issueId, bytes4 option) external
+    hasProposal(issueId)// override
+    returns (bool) {
+        bytes4 yea = bytes4("yea");
+        bytes4 nay = bytes4("nay");
+        require(option == yea || option == nay, "Voting: you should say yea or nay");
+        require(_proposals[issueId].votingType == ProposalType.Native, "Voting: please choose an option by index");
+        uint optionId = 0;
+        if (option == yea) optionId = 1;
+        return _vote(issueId, optionId);
+    }
+
+    function vote(uint issueId, uint option) external
+    hasProposal(issueId)// override
+    returns (bool) {
+        Proposal memory proposal = _proposals[issueId];
+        require(proposal.options.length > option, "Voting: out of indexes");
+        return _vote(issueId, option);
     }
 
     function execProposal(uint issueId) external {
