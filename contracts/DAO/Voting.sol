@@ -74,7 +74,7 @@ contract Voting is Managing {
     }
 
     bool private _everyoneCreateProposal;
-    uint private _minAmountToCreate;
+    uint private _minAmountToCreate = 10000e6;
     mapping (uint8 => ProposalConfig) private _proposalConfigs;
 
     mapping (uint => Proposal) private _proposals;
@@ -114,11 +114,18 @@ contract Voting is Managing {
     }
 
     constructor () public {
-        uint quorumPct = 50 * 1000;
-        uint supportPct = 20 * 1000;
+        uint quorumPct = 20 * 1000;
+        uint supportPct = 50 * 1000 + 1;
         _proposalConfigs[uint8(ProposalUpdater.Nothing)] = ProposalConfig(quorumPct, supportPct);
         emit UpdatedProposalConfig(ProposalUpdater.Nothing, quorumPct, supportPct);
         _proposalConfigs[uint8(ProposalUpdater.Inflation)] = ProposalConfig(quorumPct, supportPct);
+        emit UpdatedProposalConfig(ProposalUpdater.Inflation, quorumPct, supportPct);
+        _proposalConfigs[uint8(ProposalUpdater.Vesting)] = ProposalConfig(quorumPct, supportPct);
+        emit UpdatedProposalConfig(ProposalUpdater.Vesting, quorumPct, supportPct);
+        _proposalConfigs[uint8(ProposalUpdater.CreateProposal)] = ProposalConfig(quorumPct, supportPct);
+        emit UpdatedProposalConfig(ProposalUpdater.CreateProposal, quorumPct, supportPct);
+        _proposalConfigs[uint8(ProposalUpdater.UpdateConfig)] = ProposalConfig(quorumPct, supportPct);
+        emit UpdatedProposalConfig(ProposalUpdater.UpdateConfig, quorumPct, supportPct);
     }
 
     // VIEW
@@ -617,9 +624,7 @@ contract Voting is Managing {
         proposal.options[option].weight += tokens;
 
         if (!proposal.hasQuorum) {
-            uint supply = _Token.lockedSupply();
-            uint hasQuorum = proposal.totalVotingPower * 100000;
-            uint quorumRctNow = hasQuorum / supply;
+            uint quorumRctNow = proposal.totalVotingPower * 100000 / _Token.lockedSupply();
 
             if (quorumRctNow >= proposal.quorumPct) {
                 proposal.hasQuorum = true;
