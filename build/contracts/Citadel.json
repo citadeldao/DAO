@@ -1,0 +1,1924 @@
+{
+  "contractName": "Citadel",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes4",
+              "name": "id",
+              "type": "bytes4"
+            },
+            {
+              "internalType": "address[]",
+              "name": "whitelist",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "threshold",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct Citadel.MultisigData[]",
+          "name": "multisigs",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "initialSupply",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "stakingPct",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "vestingPct",
+          "type": "uint256"
+        }
+      ],
+      "name": "changeInflationRatio",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDaoAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "daoAddress_",
+          "type": "address"
+        }
+      ],
+      "name": "initDaoTransport",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.6.2+commit.bacdbe57\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"bytes4\",\"name\":\"id\",\"type\":\"bytes4\"},{\"internalType\":\"address[]\",\"name\":\"whitelist\",\"type\":\"address[]\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"internalType\":\"struct Citadel.MultisigData[]\",\"name\":\"multisigs\",\"type\":\"tuple[]\"},{\"internalType\":\"uint256\",\"name\":\"initialSupply\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"stakingPct\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"vestingPct\",\"type\":\"uint256\"}],\"name\":\"changeInflationRatio\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getDaoAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"daoAddress_\",\"type\":\"address\"}],\"name\":\"initDaoTransport\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/pirat/Desktop/DAO/contracts/Citadel.sol\":\"Citadel\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/pirat/Desktop/DAO/contracts/Citadel.sol\":{\"keccak256\":\"0xd8db6d72d8c4a16bac6c612496e34a3af4578c70fa3d0ed9b40314f548444467\",\"urls\":[\"bzz-raw://a1e254d0f0c68e5eba348c3f9b67743881fb15a7eb0b6b78ed5ebbd796246ad5\",\"dweb:/ipfs/Qmc2PuMHiyhrT7rdD9KTQKpjz5f27kr7cbFmupoZBJzPnu\"]},\"/home/pirat/Desktop/DAO/contracts/Token/CitadelDaoTransport.sol\":{\"keccak256\":\"0x749cbb11299d630f19d090053205c322ea625ed8f5b34d0b94ad97e41171b15b\",\"urls\":[\"bzz-raw://ed80db70e4fa723111d050c1dad8b8d0368c93b0923cc3bb4d7a0a03e3ab022f\",\"dweb:/ipfs/QmdVoGBSUZxR8K5a9H8BkDdAjAvKaA8aKvwB76WVqCsbaP\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161037638038061037683398101604081905261002f9161011e565b50506101f6565b600060608284031215610047578081fd5b61005160606101b1565b82519091506001600160e01b03198116811461006c57600080fd5b81526020828101516001600160401b0381111561008857600080fd5b80840185601f82011261009a57600080fd5b805191506100af6100aa836101d7565b6101b1565b82815283810190828501858502840186018910156100cc57600080fd5b60009350835b858110156101025781516001600160a01b03811681146100f0578586fd5b845292860192908601906001016100d2565b5050808587015250505050506040820151604082015292915050565b60008060408385031215610130578182fd5b82516001600160401b03811115610145578283fd5b80840185601f820112610156578384fd5b805191506101666100aa836101d7565b82815260208082019190838101875b8681101561019e5761018c8b848451890101610036565b85529382019390820190600101610175565b5050969096015195979596505050505050565b6040518181016001600160401b03811182821017156101cf57600080fd5b604052919050565b60006001600160401b038211156101ec578081fd5b5060209081020190565b610171806102056000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80631d68702d1461004657806344263fcb14610064578063aa6b3f1114610079575b600080fd5b61004e61008c565b60405161005b9190610127565b60405180910390f35b6100776100723660046100d8565b61009b565b005b610077610087366004610106565b6100bd565b6000546001600160a01b031690565b600080546001600160a01b0319166001600160a01b0392909216919091179055565b6000546001600160a01b031633146100d457600080fd5b5050565b6000602082840312156100e9578081fd5b81356001600160a01b03811681146100ff578182fd5b9392505050565b60008060408385031215610118578081fd5b50508035926020909101359150565b6001600160a01b039190911681526020019056fea26469706673582212200a8cc31175dcae8c64d4a01bc6782e349a92022e079e0a8b196530eb3bc82c2564736f6c63430006020033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80631d68702d1461004657806344263fcb14610064578063aa6b3f1114610079575b600080fd5b61004e61008c565b60405161005b9190610127565b60405180910390f35b6100776100723660046100d8565b61009b565b005b610077610087366004610106565b6100bd565b6000546001600160a01b031690565b600080546001600160a01b0319166001600160a01b0392909216919091179055565b6000546001600160a01b031633146100d457600080fd5b5050565b6000602082840312156100e9578081fd5b81356001600160a01b03811681146100ff578182fd5b9392505050565b60008060408385031215610118578081fd5b50508035926020909101359150565b6001600160a01b039190911681526020019056fea26469706673582212200a8cc31175dcae8c64d4a01bc6782e349a92022e079e0a8b196530eb3bc82c2564736f6c63430006020033",
+  "sourceMap": "139:2522:0:-:0;;;291:2232;8:9:-1;5:2;;;30:1;27;20:12;5:2;291:2232:0;;;;;;;;;;;;;;;;;;;;;;;139:2522;;1863:761:-1;;1987:4;1975:9;1970:3;1966:19;1962:30;1959:2;;;-1:-1;;1995:12;1959:2;2023:20;1987:4;2023:20;;;1767:13;;2014:29;;-1:-1;;;;;;;4419:78;;4898:34;;4888:2;;-1:-1;;4936:12;4888:2;2098:85;;2270:2;2255:18;;;2249:25;-1:-1;;;;;2283:30;;2280:2;;;-1:-1;;2316:12;2280:2;2429:6;2418:9;2414:22;288:3;281:4;273:6;269:17;265:27;255:2;;-1:-1;;296:12;255:2;336:6;330:13;316:27;;358:76;373:60;426:6;373:60;;;358:76;;;462:21;;;519:14;;;;494:17;;;608;;;599:27;;;;596:36;-1:-1;593:2;;;-1:-1;;635:12;593:2;-1:-1;661:10;;-1:-1;655:217;680:6;677:1;674:13;655:217;;;83:13;;-1:-1;;;;;4571:54;;4775:35;;4765:2;;-1:-1;;4814:12;4765:2;748:61;;823:14;;;;851;;;;702:1;695:9;655:217;;;659:14;;2361:81;2270:2;2347:5;2343:16;2336:107;;;;;;2509:2;2578:9;2574:22;2709:13;2509:2;2528:5;2524:16;2517:86;1953:671;;;;;2772:576;;;2953:2;2941:9;2932:7;2928:23;2924:32;2921:2;;;-1:-1;;2959:12;2921:2;3004:24;;-1:-1;;;;;3037:30;;3034:2;;;-1:-1;;3070:12;3034:2;3196:6;3185:9;3181:22;1076:3;1069:4;1061:6;1057:17;1053:27;1043:2;;-1:-1;;1084:12;1043:2;1124:6;1118:13;1104:27;;1146:104;1161:88;1242:6;1161:88;;1146:104;1278:21;;;1322:4;1335:14;;;;1256:16;1310:17;;;-1:-1;1415:261;1440:6;1437:1;1434:13;1415:261;;;1540:72;1608:3;1322:4;1516:3;1510:10;1314:6;1498:23;;1540:72;;;1528:85;;1627:14;;;;1655;;;;1462:1;1455:9;1415:261;;;-1:-1;;3300:22;;;;2709:13;3090:123;;2709:13;;-1:-1;;;;;;2915:433;3355:256;3417:2;3411:9;3443:17;;;-1:-1;;;;;3503:34;;3539:22;;;3500:62;3497:2;;;3575:1;;3565:12;3497:2;3417;3584:22;3395:216;;-1:-1;3395:216;3618:300;;-1:-1;;;;;3762:30;;3759:2;;;-1:-1;;3795:12;3759:2;-1:-1;3840:4;3828:17;;;3893:15;;3696:222;;139:2522:0;;;;;;",
+  "deployedSourceMap": "139:2522:0:-:0;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;139:2522:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;446:92:21;;;:::i;:::-;;;;;;;;;;;;;;;;328:112;;;;;;;;;:::i;:::-;;701:153;;;;;;;;;:::i;446:92::-;494:7;520:11;-1:-1:-1;;;;;520:11:21;446:92;:::o;328:112::-;408:11;:25;;-1:-1:-1;;;;;;408:25:21;-1:-1:-1;;;;;408:25:21;;;;;;;;;;328:112::o;701:153::-;292:11;;-1:-1:-1;;;;;292:11:21;278:10;:25;270:34;;;;;;701:153;;:::o;279:241:-1:-;;383:2;371:9;362:7;358:23;354:32;351:2;;;-1:-1;;389:12;351:2;72:20;;-1:-1;;;;;1400:54;;1604:35;;1594:2;;-1:-1;;1643:12;1594:2;441:63;345:175;-1:-1;;;345:175;527:366;;;648:2;636:9;627:7;623:23;619:32;616:2;;;-1:-1;;654:12;616:2;-1:-1;;209:20;;;806:2;845:22;;;209:20;;-1:-1;610:283;1020:213;-1:-1;;;;;1400:54;;;;971:37;;1138:2;1123:18;;1109:124",
+  "source": "// SPDX-License-Identifier: GPL-3.0\npragma solidity 0.6.2;\npragma experimental ABIEncoderV2;\n\n\nimport \"./Token/CitadelDaoTransport.sol\";\n\n\ncontract Citadel is CitadelDaoTransport {\n\n    struct MultisigData {\n        bytes4 id;\n        address[] whitelist;\n        uint threshold;\n    }\n\n    constructor (\n        MultisigData[] memory multisigs,\n        uint initialSupply\n    )\n    public {\n        /*for (uint i = 0; i < multisigs.length; i++) {\n            MultisigData memory ms = multisigs[i];\n            _initMultisigWhitelist(ms.id, ms.whitelist, ms.threshold);\n        }*/\n\n        // mint inflation\n        //!!!uint inflation = uint(500000000).mul(1e6);\n        //!!!_mint(address(1), inflation);\n\n        //initialSupply = initialSupply.mul(1e6);\n        \n        //_mint(_bankAddress, initialSupply.mul(10).div(100));\n\n        //uint256 publicSaleLimit = initialSupply;\n        //uint256 value = 0;\n\n        //uint256 vestingBudget = initialSupply.mul(60).div(100);\n        //publicSaleLimit = publicSaleLimit.sub(vestingBudget);\n        //!!!_initInflation(inflation, inflation, 800, 40, 60);\n        //_mint(address(3), vestingBudget.mul(60).div(100));\n        //_mint(address(4), vestingBudget.mul(40).div(100));\n\n        //!!!_initCitadelTokenLocker(address(5));\n\n        //value = initialSupply.mul(15).div(100);\n        //publicSaleLimit = publicSaleLimit.sub(value);\n        //_initTeam(address(6), value, _teamUnlockPct);\n        //_mint(address(6), value);\n\n        //value = initialSupply.mul(10).div(100);\n        //publicSaleLimit = publicSaleLimit.sub(value);\n        //_initInvestors(address(7), value, _investorsUnlockPct);\n        //_mint(address(7), value);\n\n    /*\n        // mint team\n        _mint(address(this), uint(147250000).mul(1e6));\n\n        // mint advisors\n        _mint(address(this), uint(2750000).mul(1e6));\n\n        // mint private sale 1\n        _mint(address(this), uint(2500000).mul(1e6));\n\n        // mint private sale 2\n        _mint(address(this), uint(48333333).mul(1e6));\n\n        // mint private eco fund\n        _mint(address(this), uint(196666667).mul(1e6));\n\n        // mint private found fund\n        _mint(address(this), uint(40000000).mul(1e6));\n\n        // mint private community fund\n        _mint(address(this), uint(50000000).mul(1e6));\n\n        // mint public & market sale\n        _mint(address(this), uint(12500000).mul(1e6));\n    */\n\n        //!!!_mint(address(this), uint(500000000).mul(1e6));\n\n        //!!assert(totalSupply() == initialSupply);\n\n    }\n\n    /*!!!function delegateTokens (address to, uint amount) external onlyOwner {\n        _transfer(address(this), to, amount);\n    }*/\n\n}\n",
+  "sourcePath": "/home/pirat/Desktop/DAO/contracts/Citadel.sol",
+  "ast": {
+    "absolutePath": "/home/pirat/Desktop/DAO/contracts/Citadel.sol",
+    "exportedSymbols": {
+      "Citadel": [
+        23
+      ]
+    },
+    "id": 24,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "36:22:0"
+      },
+      {
+        "id": 2,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "59:33:0"
+      },
+      {
+        "absolutePath": "/home/pirat/Desktop/DAO/contracts/Token/CitadelDaoTransport.sol",
+        "file": "./Token/CitadelDaoTransport.sol",
+        "id": 3,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 7877,
+        "src": "95:41:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4,
+              "name": "CitadelDaoTransport",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 7876,
+              "src": "159:19:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CitadelDaoTransport_$7876",
+                "typeString": "contract CitadelDaoTransport"
+              }
+            },
+            "id": 5,
+            "nodeType": "InheritanceSpecifier",
+            "src": "159:19:0"
+          }
+        ],
+        "contractDependencies": [
+          7876
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 23,
+        "linearizedBaseContracts": [
+          23,
+          7876
+        ],
+        "name": "Citadel",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Citadel.MultisigData",
+            "id": 13,
+            "members": [
+              {
+                "constant": false,
+                "id": 7,
+                "name": "id",
+                "nodeType": "VariableDeclaration",
+                "overrides": null,
+                "scope": 13,
+                "src": "216:9:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes4",
+                  "typeString": "bytes4"
+                },
+                "typeName": {
+                  "id": 6,
+                  "name": "bytes4",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "216:6:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes4",
+                    "typeString": "bytes4"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 10,
+                "name": "whitelist",
+                "nodeType": "VariableDeclaration",
+                "overrides": null,
+                "scope": 13,
+                "src": "235:19:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 8,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "235:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 9,
+                  "length": null,
+                  "nodeType": "ArrayTypeName",
+                  "src": "235:9:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 12,
+                "name": "threshold",
+                "nodeType": "VariableDeclaration",
+                "overrides": null,
+                "scope": 13,
+                "src": "264:14:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 11,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "264:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "MultisigData",
+            "nodeType": "StructDefinition",
+            "scope": 23,
+            "src": "186:99:0",
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 21,
+              "nodeType": "Block",
+              "src": "390:2133:0",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 22,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 19,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 16,
+                  "name": "multisigs",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 22,
+                  "src": "313:31:0",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_MultisigData_$13_memory_$dyn_memory_ptr",
+                    "typeString": "struct Citadel.MultisigData[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "contractScope": null,
+                      "id": 14,
+                      "name": "MultisigData",
+                      "nodeType": "UserDefinedTypeName",
+                      "referencedDeclaration": 13,
+                      "src": "313:12:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_MultisigData_$13_storage_ptr",
+                        "typeString": "struct Citadel.MultisigData"
+                      }
+                    },
+                    "id": 15,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "313:14:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_MultisigData_$13_storage_$dyn_storage_ptr",
+                      "typeString": "struct Citadel.MultisigData[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 18,
+                  "name": "initialSupply",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 22,
+                  "src": "354:18:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 17,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "354:4:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "303:75:0"
+            },
+            "returnParameters": {
+              "id": 20,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "390:0:0"
+            },
+            "scope": 23,
+            "src": "291:2232:0",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "scope": 24,
+        "src": "139:2522:0"
+      }
+    ],
+    "src": "36:2626:0"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/pirat/Desktop/DAO/contracts/Citadel.sol",
+    "exportedSymbols": {
+      "Citadel": [
+        23
+      ]
+    },
+    "id": 24,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "36:22:0"
+      },
+      {
+        "id": 2,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "59:33:0"
+      },
+      {
+        "absolutePath": "/home/pirat/Desktop/DAO/contracts/Token/CitadelDaoTransport.sol",
+        "file": "./Token/CitadelDaoTransport.sol",
+        "id": 3,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 7877,
+        "src": "95:41:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4,
+              "name": "CitadelDaoTransport",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 7876,
+              "src": "159:19:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CitadelDaoTransport_$7876",
+                "typeString": "contract CitadelDaoTransport"
+              }
+            },
+            "id": 5,
+            "nodeType": "InheritanceSpecifier",
+            "src": "159:19:0"
+          }
+        ],
+        "contractDependencies": [
+          7876
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 23,
+        "linearizedBaseContracts": [
+          23,
+          7876
+        ],
+        "name": "Citadel",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "Citadel.MultisigData",
+            "id": 13,
+            "members": [
+              {
+                "constant": false,
+                "id": 7,
+                "name": "id",
+                "nodeType": "VariableDeclaration",
+                "overrides": null,
+                "scope": 13,
+                "src": "216:9:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes4",
+                  "typeString": "bytes4"
+                },
+                "typeName": {
+                  "id": 6,
+                  "name": "bytes4",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "216:6:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes4",
+                    "typeString": "bytes4"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 10,
+                "name": "whitelist",
+                "nodeType": "VariableDeclaration",
+                "overrides": null,
+                "scope": 13,
+                "src": "235:19:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 8,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "235:7:0",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 9,
+                  "length": null,
+                  "nodeType": "ArrayTypeName",
+                  "src": "235:9:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 12,
+                "name": "threshold",
+                "nodeType": "VariableDeclaration",
+                "overrides": null,
+                "scope": 13,
+                "src": "264:14:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 11,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "264:4:0",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "MultisigData",
+            "nodeType": "StructDefinition",
+            "scope": 23,
+            "src": "186:99:0",
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 21,
+              "nodeType": "Block",
+              "src": "390:2133:0",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 22,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 19,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 16,
+                  "name": "multisigs",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 22,
+                  "src": "313:31:0",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_MultisigData_$13_memory_$dyn_memory_ptr",
+                    "typeString": "struct Citadel.MultisigData[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "contractScope": null,
+                      "id": 14,
+                      "name": "MultisigData",
+                      "nodeType": "UserDefinedTypeName",
+                      "referencedDeclaration": 13,
+                      "src": "313:12:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_MultisigData_$13_storage_ptr",
+                        "typeString": "struct Citadel.MultisigData"
+                      }
+                    },
+                    "id": 15,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "313:14:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_MultisigData_$13_storage_$dyn_storage_ptr",
+                      "typeString": "struct Citadel.MultisigData[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 18,
+                  "name": "initialSupply",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 22,
+                  "src": "354:18:0",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 17,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "354:4:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "303:75:0"
+            },
+            "returnParameters": {
+              "id": 20,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "390:0:0"
+            },
+            "scope": 23,
+            "src": "291:2232:0",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "scope": 24,
+        "src": "139:2522:0"
+      }
+    ],
+    "src": "36:2626:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.2+commit.bacdbe57.Emscripten.clang"
+  },
+  "networks": {
+    "4": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x08bfc1c7c65a71e23a2812a8b5c270eacced3fddb563c404f93186e307158b27": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "stakingPct",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "vestingPct",
+              "type": "uint256"
+            }
+          ],
+          "name": "CitadelInflationRatio",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x4df31c03CAe0e463Cd0ACf87b993938758d6Bed0",
+      "transactionHash": "0x744e752311e7d5254717c80158c778d761488a2246608dc9e230f38b73670dc3"
+    },
+    "97": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x08bfc1c7c65a71e23a2812a8b5c270eacced3fddb563c404f93186e307158b27": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "stakingPct",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "vestingPct",
+              "type": "uint256"
+            }
+          ],
+          "name": "CitadelInflationRatio",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x2193E7A9184A7Cfbcf210aeaC6761c1da6c8f823",
+      "transactionHash": "0x1f00edd46b8f7a5a0f6e1caef286aaba9dedbf16c6221c8313b070c30582ea23"
+    },
+    "1602714606526": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x65369179643f625f883e08154fa1232aefb8e808889a7622fc099ef64dcffce3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "shares",
+              "type": "uint256"
+            }
+          ],
+          "name": "InvestorAdded",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x66C0834332d88Bbc797622C4ae9500D8b3Fcf91f",
+      "transactionHash": "0x83d3a6e54b63b85e195941b2d28b6ecfbed3c1a4d8cc0e79f72bb73784340377"
+    },
+    "1603200445925": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x65369179643f625f883e08154fa1232aefb8e808889a7622fc099ef64dcffce3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "shares",
+              "type": "uint256"
+            }
+          ],
+          "name": "InvestorAdded",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x975325dD9C56EDb5563D70F285956C755425a082",
+      "transactionHash": "0xf7dad5a1be3a0a43fb4960dff9120ab23c7ffbe508f087568b09c73ba129d239"
+    },
+    "1603735455995": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x65369179643f625f883e08154fa1232aefb8e808889a7622fc099ef64dcffce3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "shares",
+              "type": "uint256"
+            }
+          ],
+          "name": "InvestorAdded",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xd955F88Fa44D92E04CdA47c61FeeC3cd97d108b8",
+      "transactionHash": "0x845772866dad80fcb2114d4edcd4e7260b0f56315d0e165f865737db820b8d93"
+    },
+    "1605799788298": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x08bfc1c7c65a71e23a2812a8b5c270eacced3fddb563c404f93186e307158b27": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "stakingPct",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "vestingPct",
+              "type": "uint256"
+            }
+          ],
+          "name": "CitadelInflationRatio",
+          "type": "event"
+        },
+        "0x65369179643f625f883e08154fa1232aefb8e808889a7622fc099ef64dcffce3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "shares",
+              "type": "uint256"
+            }
+          ],
+          "name": "InvestorAdded",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xf184aF49d6709e60BE1FF01e7415968d45fff1D9",
+      "transactionHash": "0x1fa27155ed141a1e5ba9c86fcccb122fc5bbd9e708218661ed8ee7c70852b199"
+    },
+    "1606497528102": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x08bfc1c7c65a71e23a2812a8b5c270eacced3fddb563c404f93186e307158b27": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "stakingPct",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "vestingPct",
+              "type": "uint256"
+            }
+          ],
+          "name": "CitadelInflationRatio",
+          "type": "event"
+        },
+        "0x65369179643f625f883e08154fa1232aefb8e808889a7622fc099ef64dcffce3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "shares",
+              "type": "uint256"
+            }
+          ],
+          "name": "InvestorAdded",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xaF01D2B02de8E61D1e4D35AFF17D309b59f5Ce38",
+      "transactionHash": "0x8b814ae3517778698388394aef9b1197f1a757b9827b12d29e8d033e8929353a"
+    },
+    "1607501574683": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x08bfc1c7c65a71e23a2812a8b5c270eacced3fddb563c404f93186e307158b27": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "stakingPct",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "vestingPct",
+              "type": "uint256"
+            }
+          ],
+          "name": "CitadelInflationRatio",
+          "type": "event"
+        },
+        "0x65369179643f625f883e08154fa1232aefb8e808889a7622fc099ef64dcffce3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "shares",
+              "type": "uint256"
+            }
+          ],
+          "name": "InvestorAdded",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xaF01D2B02de8E61D1e4D35AFF17D309b59f5Ce38",
+      "transactionHash": "0xc8e466ce977254930be02c03d4ba8fc7db14cce9c48e92c3dc91726a0d45f252"
+    },
+    "1607522061723": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x08bfc1c7c65a71e23a2812a8b5c270eacced3fddb563c404f93186e307158b27": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "stakingPct",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "vestingPct",
+              "type": "uint256"
+            }
+          ],
+          "name": "CitadelInflationRatio",
+          "type": "event"
+        },
+        "0x65369179643f625f883e08154fa1232aefb8e808889a7622fc099ef64dcffce3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "shares",
+              "type": "uint256"
+            }
+          ],
+          "name": "InvestorAdded",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x66C0834332d88Bbc797622C4ae9500D8b3Fcf91f",
+      "transactionHash": "0xa8df1369b2ef000627259e231b97011e61af7a1ac74d9828e2c08faa3017fd1e"
+    },
+    "1607606846552": {
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x08bfc1c7c65a71e23a2812a8b5c270eacced3fddb563c404f93186e307158b27": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "stakingPct",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "vestingPct",
+              "type": "uint256"
+            }
+          ],
+          "name": "CitadelInflationRatio",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x7aF30c2e6590Fae13Dd1d0D6261265A8D39f10F2",
+      "transactionHash": "0x06a6075c8a2aeaf407137b68ca1e36266c5991bcf5b3711b577ca76303e0c726"
+    },
+    "1622557613656": {
+      "events": {},
+      "links": {},
+      "address": "0x040fa2980CbA1Eaa3D97Cecfedf31Fd43b741ec4",
+      "transactionHash": "0x032edad7777355ea79aaec6816fa75c8f00da381de68df1b6a03d3b895793943"
+    }
+  },
+  "schemaVersion": "3.2.5",
+  "updatedAt": "2021-06-01T14:38:46.587Z",
+  "networkType": "ethereum",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
