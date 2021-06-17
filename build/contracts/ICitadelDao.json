@@ -1,0 +1,254 @@
+{
+  "contractName": "ICitadelDao",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "holder",
+          "type": "address"
+        }
+      ],
+      "name": "updatedStake",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.6.2+commit.bacdbe57\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"holder\",\"type\":\"address\"}],\"name\":\"updatedStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/pirat/Desktop/DAO/contracts/ICitadelDao.sol\":\"ICitadelDao\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/pirat/Desktop/DAO/contracts/ICitadelDao.sol\":{\"keccak256\":\"0xd8f6039ac8a8dabc55cc471f625437fa0e6db978109930f18b783908330a0b3f\",\"urls\":[\"bzz-raw://4ce5e24674abe3be12c26a0fe9b7e031a49cb804054b5d0fca3e8e3887d15c10\",\"dweb:/ipfs/QmXR95inmjb2NGBK2PhYVNm13WPzTqMAdiRskKs5yS5Zu6\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: GPL-3.0\npragma solidity 0.6.2;\npragma experimental ABIEncoderV2;\n\n\ninterface ICitadelDao {\n\n    function updatedStake(address holder) external;\n\n}",
+  "sourcePath": "/home/pirat/Desktop/DAO/contracts/ICitadelDao.sol",
+  "ast": {
+    "absolutePath": "/home/pirat/Desktop/DAO/contracts/ICitadelDao.sol",
+    "exportedSymbols": {
+      "ICitadelDao": [
+        6803
+      ]
+    },
+    "id": 6804,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 6796,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "36:22:16"
+      },
+      {
+        "id": 6797,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "59:33:16"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 6803,
+        "linearizedBaseContracts": [
+          6803
+        ],
+        "name": "ICitadelDao",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "functionSelector": "70c88f30",
+            "id": 6802,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "updatedStake",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 6800,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6799,
+                  "name": "holder",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6802,
+                  "src": "146:14:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6798,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "146:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "145:16:16"
+            },
+            "returnParameters": {
+              "id": 6801,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "170:0:16"
+            },
+            "scope": 6803,
+            "src": "124:47:16",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 6804,
+        "src": "95:79:16"
+      }
+    ],
+    "src": "36:138:16"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/pirat/Desktop/DAO/contracts/ICitadelDao.sol",
+    "exportedSymbols": {
+      "ICitadelDao": [
+        6803
+      ]
+    },
+    "id": 6804,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 6796,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "36:22:16"
+      },
+      {
+        "id": 6797,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "59:33:16"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 6803,
+        "linearizedBaseContracts": [
+          6803
+        ],
+        "name": "ICitadelDao",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "functionSelector": "70c88f30",
+            "id": 6802,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "updatedStake",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 6800,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6799,
+                  "name": "holder",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6802,
+                  "src": "146:14:16",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6798,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "146:7:16",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "145:16:16"
+            },
+            "returnParameters": {
+              "id": 6801,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "170:0:16"
+            },
+            "scope": 6803,
+            "src": "124:47:16",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 6804,
+        "src": "95:79:16"
+      }
+    ],
+    "src": "36:138:16"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.2+commit.bacdbe57.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.5",
+  "updatedAt": "2021-06-17T16:12:27.150Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
