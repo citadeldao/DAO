@@ -83,6 +83,7 @@ contract Voting is Managing {
     mapping (address => uint[]) private _holderActiveVotes;
     uint private _countProposals;
 
+    event SetProposalAvailability(bool isAvailable, uint minStaked);
     event NewProposal(
         uint indexed issueId,
         address indexed creator,
@@ -273,6 +274,7 @@ contract Voting is Managing {
         require(hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         _everyoneCreateProposal = isAvailable;
         _minAmountToCreate = minStaked;
+        emit SetProposalAvailability(isAvailable, minStaked);
     }
 
     function newProposal(

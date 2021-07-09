@@ -12,10 +12,12 @@ contract Rewarding is Voting {
 
     mapping (address => uint) private _nonces;
 
+    event SetVerifyRewardAddress(address addr);
     event ClaimStakingReward(address indexed recipient, uint amount);
 
     function setRewardAddress(address rewardAddress) external onlyOwner {
         _verifyRewardAddress = rewardAddress;
+        emit SetVerifyRewardAddress(rewardAddress);
     }
 
     function claimReward(

@@ -17,6 +17,9 @@ contract MultisigSingle {
     address[] private _whitelistArr;
     mapping (bytes4 => SigProcess) private _processing;
 
+    event AddMultisigAddress(address who);
+    event RemoveMultisigAddress(address who);
+
     modifier multisig() {
         require(_whitelist[msg.sender], "Multisig: You cannot execute this method");
         _;
@@ -31,6 +34,7 @@ contract MultisigSingle {
         if (!isReady) return;
         _whitelist[account] = true;
         _whitelistArr.push(account);
+        emit AddMultisigAddress(account);
     }
 
     function multisigWhitelistRemove(address account) external multisig() {
@@ -51,6 +55,7 @@ contract MultisigSingle {
 
         delete _whitelist[account];
         _whitelistArr = replaceWhitelistArr;
+        emit RemoveMultisigAddress(account);
     }
 
     function _isMultisigReady() internal returns (bool, uint) {

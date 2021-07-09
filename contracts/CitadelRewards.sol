@@ -46,6 +46,8 @@ contract CitadelRewards is Ownable {
     byte private constant NEXT_INFLATION = 0x10;
     byte private constant NEXT_SUPPLY = 0x20;
 
+    event Claim(address recipient, uint amount);
+
     modifier onlyToken() {
         require(msg.sender == address(_Token));
         _;
@@ -84,6 +86,7 @@ contract CitadelRewards is Ownable {
         amount = _userSnapshots[account].vested - _userSnapshots[account].claimed;
         require(amount > 0, "Zero amount to claim");
         _userSnapshots[account].claimed = _userSnapshots[account].vested;
+        emit Claim(account, amount);
     }
 
     function claim() external returns (uint amount) {
@@ -92,6 +95,7 @@ contract CitadelRewards is Ownable {
         amount = _userSnapshots[account].vested - _userSnapshots[account].claimed;
         require(amount > 0, "Zero amount to claim");
         _userSnapshots[account].claimed = _userSnapshots[account].vested;
+        emit Claim(account, amount);
         _Token.withdraw(account, amount);
     }
 

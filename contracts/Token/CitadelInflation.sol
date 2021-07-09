@@ -24,6 +24,7 @@ contract CitadelInflation is CitadelToken {
 
     InflationValues[] private _inflationHistory;
 
+    event SetInflationStart(uint date);
     event ChangeInflation(uint indexed issueId, uint pct);
     event ChangeVesting(uint indexed issueId, uint pct);
 
@@ -63,6 +64,7 @@ contract CitadelInflation is CitadelToken {
         startInflationDate = _timestamp();
         _savedInflationYear = startInflationDate;
         _inflationHistory[0].date = _savedInflationYear;
+        emit SetInflationStart(startInflationDate);
     }
 
     function startInflationTo(uint date) external onlyOwner {
@@ -71,6 +73,7 @@ contract CitadelInflation is CitadelToken {
         startInflationDate = date;
         _savedInflationYear = startInflationDate;
         _inflationHistory[0].date = _savedInflationYear;
+        emit SetInflationStart(startInflationDate);
     }
 
     function withdraw(address to, uint amount) external onlyVestingOrDaoContracts {

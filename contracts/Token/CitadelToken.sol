@@ -20,6 +20,9 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
     address constant internal addressForDelegations = address(10);
     mapping (address => uint) private _delegated;
 
+    event NewDaoTransport(address addr);
+    event NewVestingTransport(address addr);
+
     modifier onlyVestingContract() {
         require(msg.sender == address(_Vesting));
         _;
@@ -57,6 +60,7 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
 
     function initVestingTransport(address vestAddress) external onlyOwner {
         _Vesting = ICitadelVesting(vestAddress);
+        emit NewVestingTransport(vestAddress);
     }
 
     function getVestingAddress() external view returns (address) {
@@ -65,6 +69,7 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
 
     function initDaoTransport(address daoAddress) external onlyOwner {
         _dao = ICitadelDao(daoAddress);
+        emit NewDaoTransport(daoAddress);
     }
 
     function getDaoAddress() external view returns (address) {
