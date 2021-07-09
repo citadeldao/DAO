@@ -225,7 +225,7 @@ contract CitadelRewards is Ownable {
             }
 
             // check gas limit
-            if (block.gaslimit - 30000 < gasleft()) break;
+            if (gasleft() < 50000) break;
         } while (
             snapshot.indexInflation < lastIndexInflation ||
             snapshot.indexSupplyHistory < lastIndexSupplyHistory ||
