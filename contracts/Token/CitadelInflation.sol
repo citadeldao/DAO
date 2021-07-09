@@ -132,7 +132,7 @@ contract CitadelInflation is CitadelToken {
     }
 
     function _makeInflationSnapshot() internal {
-        if (_maxSupply == _unlockedSupply) return;
+        if (_maxSupply <= _unlockedSupply) return;
 
         uint spentTime = _timestamp() - _savedInflationYear;
         if (spentTime < 365 days) return;
