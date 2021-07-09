@@ -40,6 +40,7 @@ contract CitadelRewards is Ownable {
     }
 
     mapping (address => UserSnapshot) private _userSnapshots;
+    mapping (address => mapping (uint => Option)) private _userStaked;
 
     byte private constant NEXT_NOTHING = 0x00;
     byte private constant NEXT_INFLATION = 0x10;
@@ -76,7 +77,21 @@ contract CitadelRewards is Ownable {
     }
 
     function updateSnapshot(address account) external onlyToken {
-        _writeUserSnapshot(account);
+        uint fixedTimestamp = _timestamp();
+        uint frozenCurrent = _Token.lockedBalanceOf(account);
+        uint lastIndexSupplyHistory = _Token.totalSupplyHistoryCount() - 1;
+        _userStaked[account][lastIndexSupplyHistory] = Option({
+            value: frozenCurrent,
+            date: fixedTimestamp
+        });
+        // first staking, just fixing indexes
+        if (_userSnapshots[account].frozen == 0) {
+            UserSnapshot storage snapshot = _userSnapshots[account];
+            snapshot.indexInflation = _Token.countInflationPoints() - 1;
+            snapshot.indexSupplyHistory = lastIndexSupplyHistory;
+            snapshot.dateUpdate = fixedTimestamp;
+            snapshot.frozen = frozenCurrent;
+        }
     }
 
     function claimFor(address account) external onlyToken returns (uint amount) {
@@ -106,19 +121,9 @@ contract CitadelRewards is Ownable {
     }
 
     function _makeUserSnapshot(address account) private view returns (UserSnapshot memory snapshot) {
-        uint frozenCurrent = _Token.lockedBalanceOf(account);
         snapshot = _userSnapshots[account];
 
-        if (snapshot.frozen == 0) {
-            // first staking, just fixing indexes
-            snapshot.indexInflation = _Token.countInflationPoints() - 1;
-            snapshot.indexSupplyHistory = _Token.totalSupplyHistoryCount() - 1;
-            snapshot.dateUpdate = _timestamp();
-            snapshot.frozen = frozenCurrent;
-            return snapshot;
-        }
-
-        // if we have already staked
+        if (snapshot.frozen == 0) return snapshot;
 
         // last yearly checkoint
         uint savedInflationYear = _Token.getSavedInflationYear();
@@ -135,6 +140,9 @@ contract CitadelRewards is Ownable {
         uint fixedTimestamp = _timestamp();
 
         do {
+            // check gas limit
+            if (gasleft() < 50000) break;
+
             // check next options
             ICitadelVestingTransport.InflationPointValues memory nextInflation;
             Option memory nextSupply;
@@ -186,23 +194,28 @@ contract CitadelRewards is Ownable {
             // 3) totalStakedSupply
             // 4) 365 days
 
-            if (inflPoint.currentSupply == _maxInflationSupply) {
-                
-                uint upd = (inflPoint.currentSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                upd = upd / totalStakedSupply / 365 days / 100;
-                snapshot.vested += upd;
-                snapshot.dateUpdate = time;
-                break;
-
-            }
-
             uint upd;
-            if (inflPoint.inflationPct < 200) {
-                upd = (_maxInflationSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                upd = upd / totalStakedSupply / 365 days / 100;
-            } else {
-                upd = inflPoint.yearlySupply * inflPoint.inflationPct * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                upd = upd / totalStakedSupply / 365 days / 10000 / 100;
+
+            if (totalStakedSupply > 0) {
+                if (inflPoint.currentSupply == _maxInflationSupply) {
+                    
+                    upd = (inflPoint.currentSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
+                    upd = upd / totalStakedSupply / 365 days / 100;
+                    snapshot.vested += upd;
+                    snapshot.dateUpdate = time;
+                    break;
+
+                } else if (inflPoint.inflationPct < 200) {
+
+                    upd = (_maxInflationSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
+                    upd = upd / totalStakedSupply / 365 days / 100;
+
+                } else {
+
+                    upd = inflPoint.yearlySupply * inflPoint.inflationPct * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
+                    upd = upd / totalStakedSupply / 365 days / 10000 / 100;
+
+                }
             }
             
             snapshot.vested += upd;
@@ -222,17 +235,17 @@ contract CitadelRewards is Ownable {
                 totalStakedSupply = nextSupply.value;
                 snapshot.indexSupplyHistory++;
 
-            }
+                Option memory updateStake = _userStaked[account][snapshot.indexSupplyHistory];
+                if (updateStake.date > 0) {
+                    snapshot.frozen = updateStake.value;
+                }
 
-            // check gas limit
-            if (gasleft() < 50000) break;
+            }
         } while (
             snapshot.indexInflation < lastIndexInflation ||
             snapshot.indexSupplyHistory < lastIndexSupplyHistory ||
             snapshot.dateUpdate < fixedTimestamp
         );
-        // final update
-        snapshot.frozen = frozenCurrent;
     }
 
     function _findNextStep(
