@@ -28,8 +28,7 @@ module.exports = async function(deployer) {
         VestingInstance;
 
     deployer.deploy(
-        Citadel,
-        1000000000, // initialSupply
+        Citadel
     ).then(async function(instance){
 
         TokenInstance = instance;

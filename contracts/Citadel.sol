@@ -8,9 +8,7 @@ import "./Token/CitadelTokenLocker.sol";
 
 contract Citadel is CitadelTokenLocker {
 
-    constructor (
-        uint initialSupply
-    )
+    constructor ()
     public {
         // mint inflation
         uint inflation = uint(500000000).mul(1e6);
@@ -21,9 +19,6 @@ contract Citadel is CitadelTokenLocker {
         _initCitadelTokenLocker(address(2));
 
         _mint(address(this), uint(500000000).mul(1e6));
-
-        assert(totalSupply() == initialSupply.mul(1e6));
-
     }
 
     function delegateTokens (address to, uint amount) external onlyOwner {
