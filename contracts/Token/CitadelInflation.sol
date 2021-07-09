@@ -110,8 +110,10 @@ contract CitadelInflation is CitadelToken {
 
         InflationValues memory lastPoint = _inflationHistory[_inflationHistory.length - 1];
         uint spentTime = _timestamp() - lastPoint.date;
-
+        
         _unlockedSupply += _yearUnlockedBudget * lastPoint.inflationPct * spentTime / 365 days / 10000;
+
+        require(_unlockedSupply < _maxSupply, "Max supply is reached");
 
         require(pct <= _restInflPct(), "Too high percentage");
 
