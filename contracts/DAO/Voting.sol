@@ -50,6 +50,8 @@ contract Voting is Managing {
         uint yea;
         bool hasQuorum;
         bool accepted;
+        uint maxIndex;
+        bool tie;
         uint expiryTime;
     }
 
@@ -388,21 +390,8 @@ contract Voting is Managing {
 
         string memory updateData;
         if (info.votingType == ProposalType.Multi) {
-            uint maxIndex;
-            uint maxWeight;
-            bool tie;
-            for (uint i = 0; i < _proposals[issueId].options.length; i++) {
-                ProposalOption memory option = _proposals[issueId].options[i];
-                if (option.weight > maxWeight) {
-                    maxIndex = i;
-                    maxWeight = option.weight;
-                    tie = false;
-                } else if (option.weight == maxWeight) {
-                    tie = true;
-                }
-            }
-            require(!tie && maxIndex > 0, "Voting: no leading option");
-            updateData = _proposals[issueId].options[maxIndex].name;
+            require(!info.tie && info.maxIndex > 0, "Voting: no leading option");
+            updateData = _proposals[issueId].options[info.maxIndex].name;
         } else {
             updateData = infoConfig.updateData;
         }
@@ -570,20 +559,18 @@ contract Voting is Managing {
             }
         } else {
             if (info.expiryTime < _timestamp() && info.hasQuorum) {
-                uint maxIndex;
                 uint maxWeight;
-                bool tie;
                 for (uint i = 0; i < proposal.options.length; i++) {
                     ProposalOption memory option = proposal.options[i];
                     if (option.weight > maxWeight) {
-                        maxIndex = i;
+                        info.maxIndex = i;
                         maxWeight = option.weight;
-                        tie = false;
+                        if (info.tie) info.tie = false;
                     } else if (option.weight == maxWeight) {
-                        tie = true;
+                        info.tie = true;
                     }
                 }
-                info.accepted = !tie && maxIndex > 0;
+                info.accepted = !info.tie && info.maxIndex > 0;
             } else {
                 info.accepted = false;
             }
