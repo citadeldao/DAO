@@ -109,7 +109,7 @@ contract CitadelRewards is Ownable {
 
     function _makeUserSnapshot(address account) private view returns (UserSnapshot memory snapshot) {
         uint frozenCurrent = _Token.lockedBalanceOf(account);
-        snapshot = _cloneUserSnapshot(_userSnapshots[account]);
+        snapshot = _userSnapshots[account];
 
         if (snapshot.frozen == 0) {
             // first staking, just fixing indexes
@@ -254,17 +254,6 @@ contract CitadelRewards is Ownable {
             lastByte = NEXT_SUPPLY;
         }
 
-    }
-
-    function _cloneUserSnapshot(UserSnapshot memory snapshot) private pure returns (UserSnapshot memory) {
-        return UserSnapshot(
-            snapshot.indexInflation,
-            snapshot.indexSupplyHistory,
-            snapshot.frozen,
-            snapshot.vested,
-            snapshot.claimed,
-            snapshot.dateUpdate
-        );
     }
 
     function version() external pure returns (string memory) {
