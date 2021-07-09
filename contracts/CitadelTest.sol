@@ -6,14 +6,11 @@ pragma experimental ABIEncoderV2;
 import "./Citadel.sol";
 
 
-contract CitadelTest is Citadel {
+contract CitadelTest is Citadel() {
 
     uint private _fakeTime;
 
-    constructor (
-        uint initialSupply
-    )
-    Citadel(initialSupply)
+    constructor ()
     public {
         _fakeTime = block.timestamp;
     }
