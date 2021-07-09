@@ -375,22 +375,17 @@ contract Voting is Managing {
     }
 
     function execProposal(uint issueId) external {
+        ProposalInfoConfig memory infoConfig = _proposalConfig(issueId);
+        require(infoConfig.creator == msg.sender || hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
+        require(!infoConfig.executed, "Voting: already executed");
 
         ProposalInfo memory info = _proposalInfo(issueId);
-
-        ProposalInfoConfig memory infoConfig = _proposalConfig(issueId);
-
-        require(infoConfig.creator == msg.sender || hasRole(VOTING_ROLE, msg.sender) || hasRole(ADMIN_ROLE, msg.sender), "Voting: you do not have permission");
         require(info.votingUpdater != ProposalUpdater.Nothing, "Voting: this proposal is not executable");
         require(info.expiryTime < _timestamp(), "Voting: voting period is not finished yet");
-        if (info.votingType == ProposalType.Native){
-            require(info.accepted, "Voting: this proposal it not accepted");
-        }
-        require(!infoConfig.executed, "Voting: already executed");
+        require(info.accepted, "Voting: this proposal it not accepted");
 
         string memory updateData;
         if (info.votingType == ProposalType.Multi) {
-            require(!info.tie && info.maxIndex > 0, "Voting: no leading option");
             updateData = _proposals[issueId].options[info.maxIndex].name;
         } else {
             updateData = infoConfig.updateData;
@@ -430,16 +425,12 @@ contract Voting is Managing {
     function redeemDepositFromProposal(uint issueId) external
     hasProposal(issueId)
     {
-        ProposalInfo memory info = _proposalInfo(issueId);
-
-        ProposalInfoConfig memory infoConfig = _proposalConfig(issueId);
-
-        require(infoConfig.creator == msg.sender, "Voting: you do not have permission");
-        require(info.expiryTime < _timestamp(), "Voting: voting period is not finished yet");
-        if (info.votingType == ProposalType.Native){
-            require(info.accepted, "Voting: this proposal it not accepted");
-        }
+        require(_proposals[issueId].creator == msg.sender, "Voting: you do not have permission");
         require(_deposited[msg.sender][issueId] > 0, "Voting: empty deposit");
+
+        ProposalInfo memory info = _proposalInfo(issueId);
+        require(info.expiryTime < _timestamp(), "Voting: voting period is not finished yet");
+        require(info.accepted, "Voting: this proposal it not accepted");
 
         _redeemTokens(issueId);
     }
