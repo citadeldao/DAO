@@ -132,6 +132,8 @@ contract CitadelRewards is Ownable {
 
         if (snapshot.indexInflation == lastIndexInflation && inflPoint.currentSupply == _maxInflationSupply) return snapshot;
 
+        uint fixedTimestamp = _timestamp();
+
         do {
             // check next options
             ICitadelVestingTransport.InflationPointValues memory nextInflation;
@@ -143,7 +145,7 @@ contract CitadelRewards is Ownable {
                 (nextSupply.value, nextSupply.date) = _Token.totalSupplyHistory(snapshot.indexSupplyHistory + 1);
             }
             (byte nextStep, uint time) = _findNextStep(nextInflation, nextSupply);
-            if (nextStep == NEXT_NOTHING) time = _timestamp();
+            if (nextStep == NEXT_NOTHING) time = fixedTimestamp;
             
             // calculate
 
@@ -227,7 +229,7 @@ contract CitadelRewards is Ownable {
         } while (
             snapshot.indexInflation < lastIndexInflation ||
             snapshot.indexSupplyHistory < lastIndexSupplyHistory ||
-            snapshot.dateUpdate < _timestamp()
+            snapshot.dateUpdate < fixedTimestamp
         );
         // final update
         snapshot.frozen = frozenCurrent;
