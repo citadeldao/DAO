@@ -9,7 +9,6 @@ import "./ICitadelVestingTransport.sol";
 contract CitadelRewards is Ownable {
 
     ICitadelVestingTransport private _Token;
-    uint private _tokenDeployed;
     uint private _maxInflationSupply;
 
     struct Option {
@@ -57,7 +56,6 @@ contract CitadelRewards is Ownable {
         address addressOfToken
     ) public {
         _Token = ICitadelVestingTransport(addressOfToken);
-        _tokenDeployed = _Token.deployed();
         _maxInflationSupply = _Token.getMaxSupply();
     }
 

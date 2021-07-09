@@ -88,9 +88,9 @@ contract CitadelTokenLocker is CitadelInflation {
 
     function restake() external activeInflation {
 
-        require(address(_Vesting) != address(0), "CitadelTokenLocker: vesting contract undefined");
+        require(address(_vesting) != address(0), "CitadelTokenLocker: vesting contract undefined");
         
-        uint amount = _Vesting.claimFor(msg.sender);
+        uint amount = _vesting.claimFor(msg.sender);
 
         require(amount > 0);
 
@@ -110,8 +110,8 @@ contract CitadelTokenLocker is CitadelInflation {
         if (address(_dao) != address(0)) {
             _dao.updatedStake(msg.sender);
         }
-        if (address(_Vesting) != address(0)) {
-            _Vesting.updateSnapshot(msg.sender);
+        if (address(_vesting) != address(0)) {
+            _vesting.updateSnapshot(msg.sender);
         }
     }
 

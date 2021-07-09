@@ -11,20 +11,16 @@ import "../ICitadelDao.sol";
 
 contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
 
-    address public _bankAddress;
     uint public deployDate;
-    uint public percentDecimal;
-
-    ICitadelVesting internal _Vesting;
+    ICitadelVesting internal _vesting;
     ICitadelDao internal _dao;
     address constant internal addressForDelegations = address(10);
-    mapping (address => uint) private _delegated;
 
     event NewDaoTransport(address addr);
     event NewVestingTransport(address addr);
 
     modifier onlyVestingContract() {
-        require(msg.sender == address(_Vesting));
+        require(msg.sender == address(_vesting));
         _;
     }
 
@@ -34,15 +30,13 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
     }
 
     modifier onlyVestingOrDaoContracts() {
-        require(msg.sender == address(_Vesting) || msg.sender == address(_dao));
+        require(msg.sender == address(_vesting) || msg.sender == address(_dao));
         _;
     }
 
     constructor () public {
 
-        _bankAddress = address(this);
         deployDate = block.timestamp;
-        percentDecimal = 1e15;
 
         _setupDecimals(6);
 
@@ -59,12 +53,12 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
     }
 
     function initVestingTransport(address vestAddress) external onlyOwner {
-        _Vesting = ICitadelVesting(vestAddress);
+        _vesting = ICitadelVesting(vestAddress);
         emit NewVestingTransport(vestAddress);
     }
 
     function getVestingAddress() external view returns (address) {
-        return address(_Vesting);
+        return address(_vesting);
     }
 
     function initDaoTransport(address daoAddress) external onlyOwner {
@@ -78,12 +72,10 @@ contract CitadelToken is ERC20("Citadel.one", "XCT"), Ownable, Pausable {
 
     function delegateToDAO(address from, uint amount) external onlyDaoContract {
         _transfer(from, addressForDelegations, amount);
-        _delegated[from] = _delegated[from].add(amount);
     }
 
     function redeemFromDAO(address to, uint amount) external onlyDaoContract {
         _transfer(addressForDelegations, to, amount);
-        _delegated[to] = _delegated[to].sub(amount);
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
