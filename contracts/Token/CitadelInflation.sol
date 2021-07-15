@@ -25,6 +25,7 @@ contract CitadelInflation is CitadelToken {
     InflationValues[] private _inflationHistory;
 
     event SetInflationStart(uint date);
+    event InflationUpdated(uint index);
     event ChangeInflation(uint indexed issueId, uint pct);
     event ChangeVesting(uint indexed issueId, uint pct);
 
@@ -118,6 +119,7 @@ contract CitadelInflation is CitadelToken {
         require(pct <= _restInflPct(), "Too high percentage");
 
         _inflationHistory.push(InflationValues(pct, lastPoint.stakingPct, _unlockedSupply, _yearUnlockedBudget, _timestamp()));
+        emit InflationUpdated(_inflationHistory.length - 1);
     }
 
     function _updateVesting(uint pct) internal {
@@ -129,6 +131,7 @@ contract CitadelInflation is CitadelToken {
         _unlockedSupply += _yearUnlockedBudget * lastPoint.inflationPct * spentTime / 365 days / 10000;
 
         _inflationHistory.push(InflationValues(lastPoint.inflationPct, pct, _unlockedSupply, _yearUnlockedBudget, _timestamp()));
+        emit InflationUpdated(_inflationHistory.length - 1);
     }
 
     function _makeInflationSnapshot() internal {
@@ -146,6 +149,7 @@ contract CitadelInflation is CitadelToken {
             if (updateUnlock + _unlockedSupply >= _maxSupply || infl < 200) {
                 _unlockedSupply = _maxSupply;
                 _inflationHistory.push(InflationValues(_restInflPct(), lastPoint.stakingPct, _unlockedSupply, _unlockedSupply, _savedInflationYear));
+                emit InflationUpdated(_inflationHistory.length - 1);
                 break;
             } else {
                 _unlockedSupply += updateUnlock;
@@ -157,6 +161,7 @@ contract CitadelInflation is CitadelToken {
                     if (rest < 200) infl = rest;
                 }
                 _inflationHistory.push(InflationValues(infl, lastPoint.stakingPct, _unlockedSupply, _unlockedSupply, _savedInflationYear));
+                emit InflationUpdated(_inflationHistory.length - 1);
             }
 
         }
@@ -179,6 +184,7 @@ contract CitadelInflation is CitadelToken {
         _yearUnlockedBudget = otherSum;
 
         _inflationHistory.push(InflationValues(inflationPct, stakingPct, _unlockedSupply, _yearUnlockedBudget, _timestamp()));
+        emit InflationUpdated(_inflationHistory.length - 1);
 
     }
 
