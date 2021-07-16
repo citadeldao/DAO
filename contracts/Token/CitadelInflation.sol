@@ -130,6 +130,8 @@ contract CitadelInflation is CitadelToken {
 
         _unlockedSupply += _yearUnlockedBudget * lastPoint.inflationPct * spentTime / 365 days / 10000;
 
+        require(_unlockedSupply < _maxSupply, "Max supply is reached");
+
         _inflationHistory.push(InflationValues(lastPoint.inflationPct, pct, _unlockedSupply, _yearUnlockedBudget, _timestamp()));
         emit InflationUpdated(_inflationHistory.length - 1);
     }
