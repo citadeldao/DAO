@@ -151,8 +151,38 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
         const instance = await CitadelUnlockCommFund.deployed();
         assert.equal(
             (await instance.multisigWhitelist.call()).length,
-            3
-        )
+            3,
+            'Incorrect list length'
+        );
+    })
+
+    it('Set threshold', async function(){
+        const instance = await CitadelUnlockCommFund.deployed();
+
+        assert.equal(
+            await instance.getThreshold.call(),
+            2,
+            'Incorrect initial threshold'
+        );
+
+        try {
+            await instance.setThreshold.sendTransaction(1);
+            assert(false, 'Saved threshold as 1 < 2 (minimum');
+        } catch {}
+
+        try {
+            await instance.setThreshold.sendTransaction(4);
+            assert(false, 'Saved threshold as 4 > 3 (white list length)');
+        } catch {}
+
+        await instance.setThreshold.sendTransaction(3);
+        await instance.setThreshold.sendTransaction(3, {from: accounts[1]});
+
+        assert.equal(
+            await instance.getThreshold.call(),
+            3,
+            'Incorrect threshold'
+        );
     })
 
     it('Add one more to the whitelist', async function(){
@@ -164,11 +194,18 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
         if ((await instance.multisigWhitelist.call()).length == 3) {
 
             await instance.multisigWhitelistAdd.sendTransaction(accounts[3], {from: accounts[1]});
+            await instance.multisigWhitelistAdd.sendTransaction(accounts[3], {from: accounts[2]});
 
             assert.equal(
                 (await instance.multisigWhitelist.call()).length,
-                4
-            )
+                4,
+                'Incorrect list length'
+            );
+            assert.equal(
+                await instance.getThreshold.call(),
+                4,
+                'Incorrect threshold'
+            );
             return;
 
         }
@@ -183,12 +220,18 @@ contract('Multisig in CitadelUnlockCommFund', function(accounts){
         if ((await instance.multisigWhitelist.call()).length == 4) {
 
             await instance.multisigWhitelistRemove.sendTransaction(accounts[3], {from: accounts[1]});
+            await instance.multisigWhitelistRemove.sendTransaction(accounts[3], {from: accounts[2]});
 
             assert.equal(
                 (await instance.multisigWhitelist.call()).length,
                 3,
                 "Account hadn't been removed"
-            )
+            );
+            assert.equal(
+                await instance.getThreshold.call(),
+                3,
+                'Incorrect threshold'
+            );
 
         } else {
             assert(false, 'Only one signature was used');

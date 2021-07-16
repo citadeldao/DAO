@@ -19,19 +19,40 @@ contract MultisigSingle {
 
     event AddMultisigAddress(address who);
     event RemoveMultisigAddress(address who);
+    event SetThreshold(uint num);
 
     modifier multisig() {
         require(_whitelist[msg.sender], "Multisig: You cannot execute this method");
         _;
     }
 
-    function multisigWhitelist() external view returns (address[] memory){
+    function multisigWhitelist() external view returns (address[] memory) {
         return _whitelistArr;
+    }
+
+    function getThreshold() external view returns (uint) {
+        return _threshold;
+    }
+
+    function setThreshold(uint num) external multisig() {
+        require(num > 1 && num <= _whitelistArr.length, "Incorrect threshold");
+
+        (bool isReady, ) = _isMultisigReady();
+        if (!isReady) return;
+
+        _threshold = num;
+        emit SetThreshold(num);
     }
 
     function multisigWhitelistAdd(address account) external multisig() {
         (bool isReady, ) = _isMultisigReady();
         if (!isReady) return;
+
+        if (_threshold == _whitelistArr.length) {
+            _threshold++;
+            emit SetThreshold(_threshold);
+        }
+
         _whitelist[account] = true;
         _whitelistArr.push(account);
         emit AddMultisigAddress(account);
@@ -42,7 +63,10 @@ contract MultisigSingle {
         (bool isReady, ) = _isReadyToRemove();
         if (!isReady) return;
 
-        if (_threshold == _whitelistArr.length) _threshold--;
+        if (_threshold == _whitelistArr.length) {
+            _threshold--;
+            emit SetThreshold(_threshold);
+        }
 
         address[] memory replaceWhitelistArr = new address[](_whitelistArr.length-1);
 
@@ -103,9 +127,11 @@ contract MultisigSingle {
         require(_threshold == 0, "Multisig: whitelist already initialized");
         require(threshold_ <= wallets.length && threshold_ > 1, "Multisig: invalid init threshold");
         _threshold = threshold_;
+        emit SetThreshold(_threshold);
         for (uint i = 0; i < wallets.length; i++) {
             _whitelist[wallets[i]] = true;
             _whitelistArr.push(wallets[i]);
+            emit AddMultisigAddress(wallets[i]);
         }
     }
 
