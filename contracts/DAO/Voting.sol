@@ -80,6 +80,7 @@ contract Voting is Managing {
     mapping (uint8 => ProposalConfig) private _proposalConfigs;
 
     mapping (uint => Proposal) private _proposals;
+    mapping (uint8 => uint) private _executedProposal;
     mapping (address => mapping (uint => uint)) private _deposited;
     mapping (address => mapping(uint => GotVote)) private _voted;
     mapping (address => uint[]) private _holderActiveVotes;
@@ -383,6 +384,7 @@ contract Voting is Managing {
         require(info.votingUpdater != ProposalUpdater.Nothing, "Voting: this proposal is not executable");
         require(info.expiryTime < _timestamp(), "Voting: voting period is not finished yet");
         require(info.accepted, "Voting: this proposal it not accepted");
+        require(_executedProposal[uint8(info.votingUpdater)] <= issueId, "Voting: denied to execute the replaced proposal");
 
         string memory updateData;
         if (info.votingType == ProposalType.Multi) {
@@ -418,6 +420,7 @@ contract Voting is Managing {
         }
 
         _proposals[issueId].executed = true;
+        _executedProposal[uint8(info.votingUpdater)] = issueId;
 
         emit ExecProposal(issueId, msg.sender);
     }
