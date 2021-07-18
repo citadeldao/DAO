@@ -193,23 +193,6 @@ module.exports = async function(deployer) {
             50_000_000 * 1e6
         );
 
-
-    //}).then(async function(instance){
-
-        /*await TokenInstance.setTeam.sendTransaction([
-            '0x5386d64023dde8e391f8bce92b5cd5bff31413ef',
-            '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
-        ], [
-            90000000 * 1e6,
-            60000000 * 1e6,
-        ]);
-
-        await TokenInstance.setInvestors.sendTransaction([
-            '0x10372ec71a29a5fe011ca0eb154f36ee27bbbc61',
-        ], [
-            100000000 * 1e6
-        ]);*/
-
         return deployer.deploy(
             CitadelDao,
             TokenInstance.address
