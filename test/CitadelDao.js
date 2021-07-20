@@ -15,6 +15,7 @@ const ProposalUpdater = {
     Vesting: 2,
     CreateProposal: 3,
     UpdateConfig: 4,
+    ExecutionTime: 5,
 };
 
 function days(n){
@@ -1049,6 +1050,89 @@ contract('CitadelDao Voting (Updater)', function(accounts){
             result.supportPct.toNumber(),
             60*1000,
             'Incorrect supportPct'
+        );
+
+    })
+
+    it('Update execution time', async function(){
+
+        time += days(40);
+        await updateTimestamp(time);
+
+        const titleInflation = 'Update execution time';
+
+        try {
+            await DaoInstance.newProposal.sendTransaction(
+                titleInflation,
+                description,
+                time + days(5),
+                '10', // 10 sec
+                ProposalUpdater.ExecutionTime,
+            );
+            assert(false, 'Wrong value');
+        } catch {}
+
+        const newValue = days(2).toString();
+
+        await DaoInstance.newProposal.sendTransaction(
+            titleInflation,
+            description,
+            time + days(5),
+            newValue, // seconds
+            ProposalUpdater.ExecutionTime,
+        );
+
+        let proposal = await DaoInstance.getNewestProposal.call();
+        assert.equal(
+            proposal.title,
+            titleInflation,
+            'Title incorrect'
+        );
+        assert.equal(
+            proposal.votingUpdater,
+            ProposalUpdater.ExecutionTime,
+            'Updater code is incorrect'
+        );
+
+        await DaoInstance.vote.sendTransaction(proposal.issueId, 0);
+        await DaoInstance.vote.sendTransaction(proposal.issueId, 1, { from: accounts[1] });
+        await DaoInstance.vote.sendTransaction(proposal.issueId, 1, { from: accounts[2] });
+    
+        time += days(6);
+        await updateTimestamp(time);
+
+        // apply new timeout
+
+        await DaoInstance.execProposal.sendTransaction(proposal.issueId);
+
+        // new proposal
+
+        await DaoInstance.newProposal.sendTransaction(
+            titleInflation,
+            description,
+            time + days(5),
+            newValue, // seconds
+            ProposalUpdater.ExecutionTime,
+        );
+
+        proposal = await DaoInstance.getNewestProposal.call();
+
+        await DaoInstance.vote.sendTransaction(proposal.issueId, 0);
+        await DaoInstance.vote.sendTransaction(proposal.issueId, 1, { from: accounts[1] });
+        await DaoInstance.vote.sendTransaction(proposal.issueId, 1, { from: accounts[2] });
+
+        time += days(6) + newValue + 100;
+        await updateTimestamp(time);
+
+        try {
+            await DaoInstance.execProposal.sendTransaction(proposal.issueId);
+            assert(false, 'Incorrect timeout');
+        } catch {}
+
+        assert.equal(
+            await DaoInstance.executionTime.call(),
+            newValue,
+            'Incorrect execution time'
         );
 
     })

@@ -17,7 +17,8 @@ contract Voting is Managing {
         Inflation,
         Vesting,
         CreateProposal,
-        UpdateConfig
+        UpdateConfig,
+        ExecutionTime
     }
 
     struct ProposalConfig {
@@ -77,6 +78,7 @@ contract Voting is Managing {
 
     bool private _everyoneCreateProposal;
     uint private _minAmountToCreate = 10000e6;
+    uint private _executionTime = 30 days;
     mapping (uint8 => ProposalConfig) private _proposalConfigs;
 
     mapping (uint => Proposal) private _proposals;
@@ -93,7 +95,7 @@ contract Voting is Managing {
         ProposalType indexed votingType,
         ProposalUpdater votingUpdater
     );
-    event ExecProposal(uint indexed issueId, address indexed initialized);
+    event ExecProposal(uint indexed issueId, ProposalUpdater indexed category, address indexed initialized);
     event OnVote(uint indexed issueId, address indexed from, uint indexed option, uint weight);
     event UpdatedProposalConfig(ProposalUpdater indexed updater, uint quorumPct, uint supportPct);
 
@@ -130,6 +132,8 @@ contract Voting is Managing {
         emit UpdatedProposalConfig(ProposalUpdater.CreateProposal, quorumPct, supportPct);
         _proposalConfigs[uint8(ProposalUpdater.UpdateConfig)] = ProposalConfig(quorumPct, supportPct);
         emit UpdatedProposalConfig(ProposalUpdater.UpdateConfig, quorumPct, supportPct);
+        _proposalConfigs[uint8(ProposalUpdater.ExecutionTime)] = ProposalConfig(quorumPct, supportPct);
+        emit UpdatedProposalConfig(ProposalUpdater.ExecutionTime, quorumPct, supportPct);
     }
 
     // VIEW
@@ -140,6 +144,10 @@ contract Voting is Managing {
 
     function minAmountToCreate() external view returns (uint) {
         return _minAmountToCreate;
+    }
+
+    function executionTime() external view returns (uint) {
+        return _executionTime;
     }
 
     function proposalConfigRates(ProposalUpdater conf) external view
@@ -383,6 +391,7 @@ contract Voting is Managing {
         ProposalInfo memory info = _proposalInfo(issueId);
         require(info.votingUpdater != ProposalUpdater.Nothing, "Voting: this proposal is not executable");
         require(info.expiryTime < _timestamp(), "Voting: voting period is not finished yet");
+        require(info.expiryTime + _executionTime > _timestamp(), "Voting: execution time is expired");
         require(info.accepted, "Voting: this proposal it not accepted");
         require(_executedProposal[uint8(info.votingUpdater)] <= issueId, "Voting: denied to execute the replaced proposal");
 
@@ -417,12 +426,14 @@ contract Voting is Managing {
             uint256 quorumPct = parseInt(string(quorumPctBts));
             uint256 supportPct = parseInt(string(supportPctBts));
             _proposalConfigs[uint8(parseInt(string(confId)))] = ProposalConfig(quorumPct, supportPct);
+        } else if (info.votingUpdater == ProposalUpdater.ExecutionTime) {
+            _executionTime = parseInt(updateData);
         }
 
         _proposals[issueId].executed = true;
         _executedProposal[uint8(info.votingUpdater)] = issueId;
 
-        emit ExecProposal(issueId, msg.sender);
+        emit ExecProposal(issueId, info.votingUpdater, msg.sender);
     }
 
     function redeemDepositFromProposal(uint issueId) external
@@ -524,6 +535,8 @@ contract Voting is Managing {
             res = res && supportPct > 0 && supportPct <= 100*1000;
             res = res && uint8(parseInt(string(confId))) <= uint8(ProposalUpdater.UpdateConfig);
             return res;
+        } else if (votingUpdater == ProposalUpdater.ExecutionTime) {
+            return parseInt(updateData) >= 1 days;
         }
         return false;
     }
