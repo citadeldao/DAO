@@ -148,6 +148,7 @@ contract CitadelInflation is CitadelToken {
         for (uint y = 0; y < spentTime / 365 days; y++) {
             _savedInflationYear += 365 days;
             uint updateUnlock = _yearUnlockedBudget * infl * (_savedInflationYear - lastPoint.date) / 365 days / 10000;
+            lastPoint.date = _savedInflationYear;
             if (updateUnlock + _unlockedSupply >= _maxSupply || infl < 200) {
                 _unlockedSupply = _maxSupply;
                 _inflationHistory.push(InflationValues(_restInflPct(), lastPoint.stakingPct, _unlockedSupply, _unlockedSupply, _savedInflationYear));
