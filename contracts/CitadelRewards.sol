@@ -169,12 +169,15 @@ contract CitadelRewards is Ownable {
 
                 } else {
 
-                    nextInflation.currentSupply = inflPoint.currentSupply;
+                    nextInflation.currentSupply = inflPoint.currentSupply + updateUnlock;
                     nextInflation.stakingPct = inflPoint.stakingPct;
                     nextInflation.yearlySupply = inflPoint.yearlySupply + inflPoint.yearlySupply * inflPoint.inflationPct / 10000;
                     if (inflPoint.inflationPct > 200) {
                         nextInflation.inflationPct = inflPoint.inflationPct - 50; // -0.5% each year
                         if (nextInflation.inflationPct < 200) nextInflation.inflationPct = 200; // 2% is minimum
+                    } else if (inflPoint.inflationPct == 200) {
+                        uint rest = (_maxInflationSupply - nextInflation.currentSupply) * 10000 / nextInflation.currentSupply;
+                        if (rest < 200) nextInflation.inflationPct = rest;
                     } else {
                         nextInflation.inflationPct = inflPoint.inflationPct;
                     }
