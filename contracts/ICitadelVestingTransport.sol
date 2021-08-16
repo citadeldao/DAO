@@ -32,14 +32,6 @@ interface ICitadelVestingTransport {
     function getSavedInflationYear() external view returns (uint);
 
     function countInflationPoints() external view returns (uint);
-    /*function inflationPoint(uint index) external view
-    returns (
-        uint inflationPct,
-        uint stakingPct,
-        uint currentSupply,
-        uint yearlySupply,
-        uint date
-    );*/
     function inflationPoint(uint index) external view returns (InflationPointValues memory);
 
     function totalSupplyHistoryCount() external view returns (uint);

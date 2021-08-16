@@ -546,9 +546,7 @@ contract('CitadelVesting', function(accounts){
         )
 
     })
-
-    // <-------
-
+    
     it('Period 18: 2025, 365 days (skip + claim)', async function(){
 
         time += days(65);

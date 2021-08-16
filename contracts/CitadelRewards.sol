@@ -2,56 +2,71 @@
 pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
+import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
 import "./ICitadelVestingTransport.sol";
 
 
 contract CitadelRewards is Ownable {
-
-    ICitadelVestingTransport private _Token;
-    uint private _maxInflationSupply;
-
-    struct Option {
-        uint value;
-        uint date;
-    }
-
-    struct InflationValues {
-        uint inflationPct;
-        uint stakingPct;
-        uint date;
-    }
-
-    struct InflationPointValues {
-        uint inflationPct;
-        uint stakingPct;
-        uint currentSupply;
-        uint yearlySupply;
-        uint date;
-    }
+    using SafeMath for uint;
 
     struct UserSnapshot {
         uint indexInflation;
         uint indexSupplyHistory;
+        uint rewardPerToken;
         uint frozen;
         uint vested;
         uint claimed;
         uint dateUpdate;
     }
 
+    struct RewardUpdating {
+        uint rewardPerToken;
+        uint rewardPerTokenFixed;
+        uint rate;
+        uint lastUpdateDate;
+        uint index;
+        bool isUpdated;
+    }
+
+    ICitadelVestingTransport private _Token;
+    uint private _maxInflationSupply;
     mapping (address => UserSnapshot) private _userSnapshots;
-    mapping (address => mapping (uint => Option)) private _userStaked;
-
-    byte private constant NEXT_NOTHING = 0x00;
-    byte private constant NEXT_INFLATION = 0x10;
-    byte private constant NEXT_SUPPLY = 0x20;
-
-    event Claim(address recipient, uint amount);
+    uint private _totalSupply;
+    uint private _savedInflationIndex;
+    uint private _lastUpdateTime;
+    uint private _rewardPerTokenStored;
+    uint private _rewardRate;
 
     modifier onlyToken() {
         require(msg.sender == address(_Token));
         _;
     }
+
+    modifier needUpdateInflation() {
+        _Token.updateSnapshot();
+        _;
+    }
+
+    modifier updateReward(address account) {
+        RewardUpdating memory data = _getRewardsUpdate();
+        if (data.isUpdated) {
+            _rewardPerTokenStored = data.rewardPerToken;
+            _lastUpdateTime = data.lastUpdateDate;
+            _savedInflationIndex = data.index;
+            _rewardRate = data.rate;
+        }
+
+        uint time = _timestamp();
+        _rewardPerTokenStored = rewardPerToken(time);
+        _lastUpdateTime = time;
+
+        _userSnapshots[account].vested = _vested(account, true);
+        _userSnapshots[account].rewardPerToken = _rewardPerTokenStored;
+        _;
+    }
+
+    event Claim(address recipient, uint amount);
 
     constructor (
         address addressOfToken
@@ -60,220 +75,194 @@ contract CitadelRewards is Ownable {
         _maxInflationSupply = _Token.getMaxSupply();
     }
 
+    /** EXTERNAL READ */
+
+    function version() external pure returns (uint) {
+        return 1;
+    }
+
+    function getRewardRate() external view returns (uint) {
+        return _rewardRate;
+    }
+
+    function getRewardsCoef() external view returns (uint) {
+        return _rewardPerTokenStored;
+    }
+
+    function get_lastUpdateTime() external view returns (uint) {
+        return _lastUpdateTime;
+    }
+
+    function getUserSnapshot(address account) external view returns (UserSnapshot memory) {
+        return _userSnapshots[account];
+    }
+
     function claimable(address account) external view returns (uint) {
-        if (_userSnapshots[account].dateUpdate == 0) return 0;
-        UserSnapshot memory snapshot = _makeUserSnapshot(account);
-        return snapshot.vested - snapshot.claimed;
+        return _vested(account).sub(_userSnapshots[account].claimed);
     }
 
     function totalVestedOf(address account) external view returns (uint) {
-        if (_userSnapshots[account].dateUpdate == 0) return 0;
-        UserSnapshot memory snapshot = _makeUserSnapshot(account);
-        return snapshot.vested;
+        return _vested(account);
     }
 
     function totalClaimedOf(address account) external view returns (uint) {
         return _userSnapshots[account].claimed;
     }
 
-    function updateSnapshot(address account) external onlyToken {
-        uint fixedTimestamp = _timestamp();
-        uint frozenCurrent = _Token.lockedBalanceOf(account);
-        uint lastIndexSupplyHistory = _Token.totalSupplyHistoryCount() - 1;
-        _userStaked[account][lastIndexSupplyHistory] = Option({
-            value: frozenCurrent,
-            date: fixedTimestamp
-        });
-        // first staking, just fixing indexes
-        if (_userSnapshots[account].frozen == 0) {
-            UserSnapshot storage snapshot = _userSnapshots[account];
-            snapshot.indexInflation = _Token.countInflationPoints() - 1;
-            snapshot.indexSupplyHistory = lastIndexSupplyHistory;
-            snapshot.dateUpdate = fixedTimestamp;
-            snapshot.frozen = frozenCurrent;
-        }
-    }
+    /** EXTERNAL WRITE */
 
-    function claimFor(address account) external onlyToken returns (uint amount) {
-        _writeUserSnapshot(account);
+    function claimFor(address account) external onlyToken updateReward(account) returns (uint amount) {
         amount = _userSnapshots[account].vested - _userSnapshots[account].claimed;
         require(amount > 0, "Zero amount to claim");
         _userSnapshots[account].claimed = _userSnapshots[account].vested;
         emit Claim(account, amount);
     }
 
-    function claim() external returns (uint amount) {
+    function claim() external needUpdateInflation updateReward(msg.sender) returns (uint amount) {
         address account = msg.sender;
-        _writeUserSnapshot(account);
-        amount = _userSnapshots[account].vested - _userSnapshots[account].claimed;
+        amount = _userSnapshots[account].vested.sub(_userSnapshots[account].claimed);
         require(amount > 0, "Zero amount to claim");
         _userSnapshots[account].claimed = _userSnapshots[account].vested;
         emit Claim(account, amount);
         _Token.withdraw(account, amount);
     }
 
-    function _timestamp() internal virtual view returns (uint) {
-        return block.timestamp;
+    function updateSnapshot(address account) external onlyToken updateReward(account) {
+        _totalSupply = _Token.lockedSupply();
+        _userSnapshots[account].frozen = _Token.lockedBalanceOf(account);
     }
 
-    function _writeUserSnapshot(address account) private {
-        _userSnapshots[account] = _makeUserSnapshot(account);
+    /** PUBLIC */
+
+    function rewardPerToken(uint time) public view returns (uint) {
+        if (_totalSupply == 0) return _rewardPerTokenStored;
+        return _rewardRate.mul(time.sub(_lastUpdateTime)).div(_totalSupply).add(_rewardPerTokenStored);
     }
 
-    function _makeUserSnapshot(address account) private view returns (UserSnapshot memory snapshot) {
-        snapshot = _userSnapshots[account];
+    /** INTERNAL */
 
-        if (snapshot.frozen == 0) return snapshot;
+    function _vested(address account) internal view returns (uint) {
+        return _vested(account, false);
+    }
 
-        // last yearly checkoint
-        uint savedInflationYear = _Token.getSavedInflationYear();
+    function _vested(address account, bool easy) internal view returns (uint) {
+        if (_userSnapshots[account].frozen == 0) return _userSnapshots[account].vested;
 
-        uint lastIndexInflation = _Token.countInflationPoints() - 1;
-        uint lastIndexSupplyHistory = _Token.totalSupplyHistoryCount() - 1;
+        uint time = _timestamp();
 
-        ICitadelVestingTransport.InflationPointValues memory inflPoint = _Token.inflationPoint(snapshot.indexInflation);
+        if (!easy) {
+            RewardUpdating memory data = _getRewardsUpdate();
+            if (data.isUpdated) {
+                uint tmpRewardPerToken = _totalSupply > 0 ? data.rate.mul(time.sub(data.lastUpdateDate)).div(_totalSupply).add(data.rewardPerToken) : data.rewardPerToken;
+                return _userSnapshots[account].frozen.mul(tmpRewardPerToken.sub(_userSnapshots[account].rewardPerToken)).div(1e18).add(_userSnapshots[account].vested);
+            }
+        }
 
-        (uint totalStakedSupply,) = _Token.totalSupplyHistory(snapshot.indexSupplyHistory);
+        return _userSnapshots[account].frozen.mul(rewardPerToken(time).sub(_userSnapshots[account].rewardPerToken)).div(1e18).add(_userSnapshots[account].vested);
+    }
 
-        if (snapshot.indexInflation == lastIndexInflation && inflPoint.currentSupply == _maxInflationSupply) return snapshot;
+    function _getRewardsUpdate() internal view returns (
+        RewardUpdating memory data
+    ) {
 
+        if (_savedInflationIndex > 0 && _rewardRate == 0) return data;
+
+        data.index = _savedInflationIndex;
+
+        uint countInflation = _Token.countInflationPoints();
         uint fixedTimestamp = _timestamp();
+        uint inflationYear = _Token.getSavedInflationYear();
+        uint yearlyVesting;
 
-        do {
-            // check gas limit
-            if (gasleft() < 50000) break;
+        if (countInflation > data.index) {
 
-            // check next options
-            ICitadelVestingTransport.InflationPointValues memory nextInflation;
-            Option memory nextSupply;
-            if (snapshot.indexInflation < lastIndexInflation) {
-                nextInflation = _Token.inflationPoint(snapshot.indexInflation + 1);
-            }
-            if (snapshot.indexSupplyHistory < lastIndexSupplyHistory) {
-                (nextSupply.value, nextSupply.date) = _Token.totalSupplyHistory(snapshot.indexSupplyHistory + 1);
-            }
-            (byte nextStep, uint time) = _findNextStep(nextInflation, nextSupply);
-            if (nextStep == NEXT_NOTHING) time = fixedTimestamp;
-            
-            // calculate
+            ICitadelVestingTransport.InflationPointValues memory currPoint;
 
-            if (nextStep != NEXT_INFLATION && time > savedInflationYear && time - savedInflationYear >= 365 days) {
-                nextStep = NEXT_INFLATION;
-                savedInflationYear += 365 days;
-                time = savedInflationYear;
-                uint updateUnlock = inflPoint.yearlySupply * inflPoint.inflationPct * (savedInflationYear - inflPoint.date) / 365 days / 10000;
-                inflPoint.date = savedInflationYear;
-                if (inflPoint.currentSupply + updateUnlock >= _maxInflationSupply) {
+            data.rewardPerToken = _rewardPerTokenStored;
+            data.lastUpdateDate = _lastUpdateTime;
+            data.rate = _rewardRate;
 
-                    inflPoint.currentSupply = _maxInflationSupply;
+            for (data.index; data.index < countInflation; data.index++) {
 
+                currPoint = _Token.inflationPoint(data.index);
+                if (currPoint.date > fixedTimestamp) return data;
+
+                if (data.rate > 0 && data.lastUpdateDate > 0 && _totalSupply > 0) {
+                    data.rewardPerToken = data.rate.mul(currPoint.date.sub(data.lastUpdateDate)).div(_totalSupply).add(data.rewardPerToken);
+                }
+
+                if (currPoint.inflationPct < 200) {
+                    yearlyVesting = _maxInflationSupply.sub(currPoint.yearlySupply).mul(currPoint.stakingPct).div(100);
                 } else {
+                    yearlyVesting = currPoint.yearlySupply.mul(currPoint.inflationPct).mul(currPoint.stakingPct).div(1000000);
+                }
+                
+                data.rate = yearlyVesting.mul(1e18).div(365 days);
 
-                    nextInflation.currentSupply = inflPoint.currentSupply + updateUnlock;
-                    nextInflation.stakingPct = inflPoint.stakingPct;
-                    nextInflation.yearlySupply = inflPoint.yearlySupply + inflPoint.yearlySupply * inflPoint.inflationPct / 10000;
-                    if (inflPoint.inflationPct > 200) {
-                        nextInflation.inflationPct = inflPoint.inflationPct - 50; // -0.5% each year
-                        if (nextInflation.inflationPct < 200) nextInflation.inflationPct = 200; // 2% is minimum
-                    } else if (inflPoint.inflationPct == 200) {
-                        uint rest = (_maxInflationSupply - nextInflation.currentSupply) * 10000 / nextInflation.currentSupply;
-                        if (rest < 200) nextInflation.inflationPct = rest;
-                    } else {
-                        nextInflation.inflationPct = inflPoint.inflationPct;
+                data.lastUpdateDate = currPoint.date;
+
+            }
+
+            data.isUpdated = true;
+
+        }
+
+        if (_totalSupply > 0) {
+            uint endOfYear = inflationYear.add(365 days);
+            if (endOfYear < fixedTimestamp) {
+
+                if (!data.isUpdated) {
+                    data.isUpdated = true;
+                    data.rewardPerToken = _rewardPerTokenStored;
+                    data.lastUpdateDate = _lastUpdateTime;
+                    data.rate = _rewardRate;
+                }
+
+                ICitadelVestingTransport.InflationPointValues memory currPoint = _Token.inflationPoint(data.index - 1);
+
+                currPoint.yearlySupply = currPoint.yearlySupply.mul(currPoint.inflationPct).mul(endOfYear.sub(currPoint.date)).div(365 days).div(10000).add(currPoint.currentSupply);
+
+                uint leftTime = endOfYear.sub(data.lastUpdateDate);
+
+                while (endOfYear < fixedTimestamp) {
+                    
+                    data.rewardPerToken = data.rate.mul(leftTime).div(_totalSupply).add(data.rewardPerToken);
+                    if (leftTime < 365 days) leftTime = 365 days;
+
+                    if (currPoint.inflationPct > 200) {
+                        currPoint.inflationPct = currPoint.inflationPct.sub(50); // -0.5% each year
+                        if (currPoint.inflationPct < 200) currPoint.inflationPct = 200; // 2% is minimum
+                    } else if (currPoint.inflationPct == 200) {
+                        uint rest = _maxInflationSupply.sub(currPoint.yearlySupply).mul(10000).div(currPoint.yearlySupply);
+                        if (rest < 200) currPoint.inflationPct = rest;
                     }
 
-                }
-            }
-            
-            // Multiplying
-            // 1) yearlySupply * inflationPct // vested
-            // 2) stakingPct
-            // 3) snapshot.frozen
-            // 4) time - snapshot.dateUpdate
-
-            // Dividing
-            // 1) 10000
-            // 2) 100
-            // 3) totalStakedSupply
-            // 4) 365 days
-
-            uint upd;
-
-            if (totalStakedSupply > 0) {
-                if (inflPoint.currentSupply == _maxInflationSupply) {
+                    yearlyVesting = currPoint.yearlySupply.mul(currPoint.inflationPct).mul(currPoint.stakingPct).div(1000000);
                     
-                    upd = (inflPoint.currentSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                    upd = upd / totalStakedSupply / 365 days / 100;
-                    snapshot.vested += upd;
-                    snapshot.dateUpdate = time;
-                    break;
+                    if (currPoint.yearlySupply.add(yearlyVesting) >= _maxInflationSupply) {
+                        yearlyVesting = _maxInflationSupply.sub(currPoint.yearlySupply);
+                    }
 
-                } else if (inflPoint.inflationPct < 200) {
+                    currPoint.yearlySupply = currPoint.yearlySupply.add(yearlyVesting);
+                    
+                    data.rate = yearlyVesting.mul(1e18).div(365 days);
+                    
 
-                    upd = (_maxInflationSupply - inflPoint.yearlySupply) * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                    upd = upd / totalStakedSupply / 365 days / 100;
+                    endOfYear = endOfYear.add(365 days);
 
-                } else {
-
-                    upd = inflPoint.yearlySupply * inflPoint.inflationPct * inflPoint.stakingPct * snapshot.frozen * (time - snapshot.dateUpdate);
-                    upd = upd / totalStakedSupply / 365 days / 10000 / 100;
+                    if (currPoint.inflationPct < 200) break;
 
                 }
-            }
-            
-            snapshot.vested += upd;
-            snapshot.dateUpdate = time;
 
-            if (nextStep == NEXT_INFLATION) {
-
-                inflPoint.inflationPct = nextInflation.inflationPct;
-                inflPoint.stakingPct = nextInflation.stakingPct;
-                inflPoint.currentSupply = nextInflation.currentSupply;
-                inflPoint.yearlySupply = nextInflation.yearlySupply;
-                inflPoint.date = time;
-                snapshot.indexInflation++;
-
-            } else if (nextStep == NEXT_SUPPLY) {
-
-                totalStakedSupply = nextSupply.value;
-                snapshot.indexSupplyHistory++;
-
-                Option memory updateStake = _userStaked[account][snapshot.indexSupplyHistory];
-                if (updateStake.date > 0) {
-                    snapshot.frozen = updateStake.value;
-                }
+                data.lastUpdateDate = endOfYear.sub(365 days);
 
             }
-        } while (
-            snapshot.indexInflation < lastIndexInflation ||
-            snapshot.indexSupplyHistory < lastIndexSupplyHistory ||
-            snapshot.dateUpdate < fixedTimestamp
-        );
-    }
-
-    function _findNextStep(
-        ICitadelVestingTransport.InflationPointValues memory nextInflation,
-        Option memory nextSupply
-    ) private pure returns (byte lastByte, uint minDate) {
-
-        uint dateInf = nextInflation.date;
-        uint dateSup = nextSupply.date;
-
-        lastByte = NEXT_NOTHING;
-
-        if (dateInf > 0) {
-            minDate = dateInf;
-            lastByte = NEXT_INFLATION;
-        }
-        if (dateSup > 0 && (dateSup < minDate || minDate == 0)) {
-            minDate = dateSup;
-            lastByte = NEXT_SUPPLY;
         }
 
     }
 
-    function version() external pure returns (string memory) {
-        return '1.0.0';
+    function _timestamp() internal virtual view returns (uint) {
+        return block.timestamp;
     }
 
 }
