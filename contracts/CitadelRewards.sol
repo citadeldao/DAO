@@ -11,13 +11,10 @@ contract CitadelRewards is Ownable {
     using SafeMath for uint;
 
     struct UserSnapshot {
-        uint indexInflation;
-        uint indexSupplyHistory;
         uint rewardPerToken;
         uint frozen;
         uint vested;
         uint claimed;
-        uint dateUpdate;
     }
 
     struct RewardUpdating {
