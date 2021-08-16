@@ -10,8 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@chainlink/contracts": "0.0.11",
-    "@truffle/hdwallet-provider": "^1.2.3",
+    "@chainlink/contracts": "^0.2.1",
+    "@truffle/hdwallet-provider": "^1.0.37",
     "bignumber.js": "^9.0.1",
     "bip39": "^3.0.4",
     "eth-crypto": "^1.8.0",
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "ethereumjs-common": "^1.5.2",
-    "truffle": "^5.3.3",
+    "truffle": "^5.1.65",
     "truffle-plugin-verify": "^0.5.7"
   }
 }

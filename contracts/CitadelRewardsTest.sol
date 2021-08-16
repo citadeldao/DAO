@@ -2,17 +2,17 @@
 pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
-import "./CitadelRewards.sol";
+import "./CitadelRewards2.sol";
 
 
-contract CitadelRewardsTest is CitadelRewards {
+contract CitadelRewardsTest is CitadelRewards2 {
 
     uint private _fakeTime;
 
     constructor (
         address addressOfToken
     )
-    CitadelRewards(
+    CitadelRewards2(
         addressOfToken
     )
     public {

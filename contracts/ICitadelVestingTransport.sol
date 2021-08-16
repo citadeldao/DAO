@@ -57,5 +57,6 @@ interface ICitadelVestingTransport {
     );
 
     function withdraw(address to, uint amount) external;
+    function updateSnapshot() external;
 
 }

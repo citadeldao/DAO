@@ -82,6 +82,10 @@ contract CitadelInflation is CitadelToken {
         _transfer(address(1), to, amount);
     }
 
+    function updateSnapshot() external onlyVestingOrDaoContracts {
+        _makeInflationSnapshot();
+    }
+
     function updateInflation(uint issueId, uint pct) external onlyDaoContract {
         require(pct >= 200 && pct <= 3000, "Percentage must be between 2% and 30%");
         
