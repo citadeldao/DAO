@@ -3,9 +3,10 @@ pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "./CitadelRewards.sol";
+import "../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
 
 
-contract CitadelRewardsTest is CitadelRewards {
+contract CitadelRewardsTest is Ownable, CitadelRewards {
 
     uint private _fakeTime;
 
