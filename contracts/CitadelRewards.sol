@@ -162,6 +162,7 @@ contract CitadelRewards is Ownable {
         RewardUpdating memory data
     ) {
 
+        // _rewardRate will be zero only if yearly vesting is zero
         if (_savedInflationIndex > 0 && _rewardRate == 0) return data;
 
         data.index = _savedInflationIndex;
@@ -179,21 +180,26 @@ contract CitadelRewards is Ownable {
             data.lastUpdateDate = _lastUpdateTime;
             data.rate = _rewardRate;
 
+            // update rewardPerToken with new snapshots
             for (data.index; data.index < countInflation; data.index++) {
 
                 currPoint = _Token.inflationPoint(data.index);
+                // check if inflation snapshot is active
                 if (currPoint.date > fixedTimestamp) return data;
 
+                // avoid zero result and dividing on 0
                 if (data.rate > 0 && data.lastUpdateDate > 0 && _totalSupply > 0) {
                     data.rewardPerToken = data.rate.mul(currPoint.date.sub(data.lastUpdateDate)).div(_totalSupply).add(data.rewardPerToken);
                 }
 
+                // we cannot use inflationPct directly when it's less than 2% 
                 if (currPoint.inflationPct < 200) {
                     yearlyVesting = _maxInflationSupply.sub(currPoint.yearlySupply).mul(currPoint.stakingPct).div(100);
                 } else {
                     yearlyVesting = currPoint.yearlySupply.mul(currPoint.inflationPct).mul(currPoint.stakingPct).div(1000000);
                 }
                 
+                // rate is how many tokens will be produced by a second
                 data.rate = yearlyVesting.mul(1e18).div(365 days);
 
                 data.lastUpdateDate = currPoint.date;
@@ -205,9 +211,11 @@ contract CitadelRewards is Ownable {
         }
 
         if (_totalSupply > 0) {
+            // We should check if inflation year was completed and if so we must update inflation percentage.
             uint endOfYear = inflationYear.add(365 days);
             if (endOfYear < fixedTimestamp) {
 
+                // if there isn't any new inflation snapshots we must set variables
                 if (!data.isUpdated) {
                     data.isUpdated = true;
                     data.rewardPerToken = _rewardPerTokenStored;
@@ -215,17 +223,22 @@ contract CitadelRewards is Ownable {
                     data.rate = _rewardRate;
                 }
 
+                // we store index + 1 from previous step
                 ICitadelVestingTransport.InflationPointValues memory currPoint = _Token.inflationPoint(data.index - 1);
 
+                // update new yearly supply to calculate new vesting amount by the formula "yearly supply / inflation %"
                 currPoint.yearlySupply = currPoint.yearlySupply.mul(currPoint.inflationPct).mul(endOfYear.sub(currPoint.date)).div(365 days).div(10000).add(currPoint.currentSupply);
 
                 uint leftTime = endOfYear.sub(data.lastUpdateDate);
 
+                // we do "while" in case there is more than one missing years
                 while (endOfYear < fixedTimestamp) {
                     
+                    // update rewardPerToken for previous year
                     data.rewardPerToken = data.rate.mul(leftTime).div(_totalSupply).add(data.rewardPerToken);
                     if (leftTime < 365 days) leftTime = 365 days;
 
+                    // update inflation percentage for new cycle
                     if (currPoint.inflationPct > 200) {
                         currPoint.inflationPct = currPoint.inflationPct.sub(50); // -0.5% each year
                         if (currPoint.inflationPct < 200) currPoint.inflationPct = 200; // 2% is minimum
@@ -234,8 +247,10 @@ contract CitadelRewards is Ownable {
                         if (rest < 200) currPoint.inflationPct = rest;
                     }
 
+                    // new cycle of vesting (for staking)
                     yearlyVesting = currPoint.yearlySupply.mul(currPoint.inflationPct).mul(currPoint.stakingPct).div(1000000);
                     
+                    // check the end of the inflation life
                     if (currPoint.yearlySupply.add(yearlyVesting) >= _maxInflationSupply) {
                         yearlyVesting = _maxInflationSupply.sub(currPoint.yearlySupply);
                     }
@@ -244,9 +259,10 @@ contract CitadelRewards is Ownable {
                     
                     data.rate = yearlyVesting.mul(1e18).div(365 days);
                     
-
+                    // update the marker to check next year cycle
                     endOfYear = endOfYear.add(365 days);
 
+                    // we do not need new cycle if inflation percentage less than 2%
                     if (currPoint.inflationPct < 200) break;
 
                 }
