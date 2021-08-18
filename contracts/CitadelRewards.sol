@@ -3,11 +3,10 @@ pragma solidity 0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../node_modules/openzeppelin-solidity/contracts/access/Ownable.sol";
 import "./ICitadelVestingTransport.sol";
 
 
-contract CitadelRewards is Ownable {
+contract CitadelRewards {
     using SafeMath for uint;
 
     struct UserSnapshot {
