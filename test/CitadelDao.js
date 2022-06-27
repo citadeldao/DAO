@@ -423,6 +423,11 @@ contract('CitadelDao Voting', function(accounts){
             'Incorrect yea'
         );
         assert.equal(
+            proposal.totalVotingPower.toNumber(),
+            staked + staked1,
+            'Incorrect totalVotingPower'
+        );
+        assert.equal(
             proposal.accepted,
             false,
             'Incorrect accepted'

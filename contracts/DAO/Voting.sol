@@ -161,10 +161,8 @@ contract Voting is Managing {
             return true;
         }
         if (_everyoneCreateProposal) {
-            uint staked = _Token.lockedBalanceOf(account);
-            if (staked >= _minAmountToCreate) {
-                return true;
-            }
+            uint balance = _Token.balanceOf(account);
+            return balance >= _minAmountToCreate;
         }
         return false;
     }
@@ -246,6 +244,7 @@ contract Voting is Managing {
         ProposalUpdater votingUpdater,
         uint nay,
         uint yea,
+        uint totalVotingPower,
         bool hasQuorum,
         bool accepted,
         uint expiryTime
@@ -259,6 +258,9 @@ contract Voting is Managing {
         hasQuorum = info.hasQuorum;
         accepted = info.accepted;
         expiryTime = info.expiryTime;
+
+        Proposal memory proposal = _proposals[issueId];
+        totalVotingPower = proposal.totalVotingPower;
     }
 
     function proposalConfig(uint issueId) external view
