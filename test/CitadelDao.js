@@ -429,7 +429,83 @@ contract('CitadelDao Voting', function(accounts){
         );
     })
 
-    it('Unvote', async function(){
+    it('Increase vote', async function(){
+        const issueId = 1;
+        
+        const staked = (await TokenInstance.lockedBalanceOf.call(accounts[0])).toNumber();
+        const counter = (await DaoInstance.weightedVoteCountsOf.call(issueId, 1)).toNumber();
+        const weight = (await DaoInstance.weightOf.call(issueId, accounts[0])).toNumber();
+        const prevProposal = await DaoInstance.proposalInfo.call(issueId);
+
+        const stakeSum = 10;
+
+        assert.equal(
+            staked,
+            weight,
+            'Incorrect staked weight'
+        );
+
+        await TokenInstance.stake.sendTransaction(stakeSum);
+        
+        assert.equal(
+            (await DaoInstance.weightedVoteCountsOf.call(issueId, 1)).toNumber(),
+            counter,
+            'Incorrect counter'
+        );
+
+        assert.equal(
+            (await DaoInstance.weightOf.call(issueId, accounts[0])).toNumber(),
+            staked + stakeSum,
+            'Incorrect weight'
+        );
+
+        const proposal = await DaoInstance.proposalInfo.call(issueId);
+        assert.equal(
+            proposal.yea.toNumber(),
+            prevProposal.yea.toNumber() + stakeSum,
+            'Incorrect yea weight'
+        );
+    })
+
+    it('Decrease vote', async function(){
+        const issueId = 1;
+        
+        const staked = (await TokenInstance.lockedBalanceOf.call(accounts[0])).toNumber();
+        const counter = (await DaoInstance.weightedVoteCountsOf.call(issueId, 1)).toNumber();
+        const weight = (await DaoInstance.weightOf.call(issueId, accounts[0])).toNumber();
+        const prevProposal = await DaoInstance.proposalInfo.call(issueId);
+
+        const unstakeSum = 10;
+
+        assert.equal(
+            staked,
+            weight,
+            'Incorrect staked weight'
+        );
+
+        await TokenInstance.unstake.sendTransaction(unstakeSum);
+
+        assert.equal(
+            (await DaoInstance.weightedVoteCountsOf.call(issueId, 1)).toNumber(),
+            counter,
+            'Incorrect counter'
+        );
+
+        assert.equal(
+            (await DaoInstance.weightOf.call(issueId, accounts[0])).toNumber(),
+            staked - unstakeSum,
+            'Incorrect weight'
+        );
+
+        const proposal = await DaoInstance.proposalInfo.call(issueId);
+        assert.equal(
+            proposal.yea.toNumber(),
+            prevProposal.yea.toNumber() - unstakeSum,
+            'Incorrect yea weight'
+        );
+    })
+
+    it('Unvote full', async function(){
         const issueId = 1;
         
         const staked = (await TokenInstance.lockedBalanceOf.call(accounts[0])).toNumber();
@@ -444,7 +520,7 @@ contract('CitadelDao Voting', function(accounts){
         );
 
         await TokenInstance.unstake.sendTransaction(staked);
-
+        
         assert.equal(
             (await DaoInstance.weightedVoteCountsOf.call(issueId, 1)).toNumber(),
             counter - 1,
