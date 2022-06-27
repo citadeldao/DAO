@@ -17,4 +17,6 @@ interface ICitadelDaoTransport {
     function delegateToDAO(address from, uint amount) external;
     function redeemFromDAO(address to, uint amount) external;
 
+    function burn(uint amount) external;
+
 }

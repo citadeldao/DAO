@@ -89,7 +89,7 @@ contract('CitadelDao Voting', function(accounts){
         RewardsInstance = await CitadelRewards.deployed();
 
         DaoInstance = await CitadelDao.deployed();
-        
+
         const amount = 1_000_000 * tokenMultiplier;
 
         await TokenInstance.delegateTokens.sendTransaction(accounts[0], amount);
@@ -619,6 +619,69 @@ contract('CitadelDao Voting', function(accounts){
             (await TokenInstance.balanceOf.call(accounts[1])).toNumber(),
             balance + deposited,
             'Incorrect balance'
+        );
+    })
+
+    it('Burn tokens for all skipped proposal', async function(){
+        const DaoDepositeAddress = '0x000000000000000000000000000000000000000A';
+        const depositAmount = 3000;
+        const burnableAmount = 2000;
+        const balance = (await TokenInstance.balanceOf.call(DaoDepositeAddress)).toNumber();
+
+        await DaoInstance.newProposal.sendTransaction(
+            'SKipped proposal',
+            '',
+            time + days(7),
+            '', // no data for updating
+            0, // update nothing
+            {
+                from: accounts[2]
+            }
+        );
+
+        await DaoInstance.newProposal.sendTransaction(
+            'SKipped proposal',
+            '',
+            time + days(7),
+            '', // no data for updating
+            0, // update nothing
+            {
+                from: accounts[2]
+            }
+        );
+
+        await DaoInstance.newProposal.sendTransaction(
+            'Pending proposal',
+            '',
+            time + days(8),
+            '', // no data for updating
+            0, // update nothing
+            {
+                from: accounts[2]
+            }
+        );
+
+        time += days(7);
+        await updateTimestamp(time);
+
+        assert.equal(
+            (await TokenInstance.balanceOf.call(DaoDepositeAddress)).toNumber(),
+            balance + depositAmount,
+            'DAO balance is incorrect'
+        );
+
+        assert.equal(
+            (await TokenInstance.balanceOf.call(DaoInstance.address)).toNumber(),
+            0,
+            'Contract balance is incorrect'
+        );
+
+        await DaoInstance.burnLostTokens.sendTransaction();
+
+        assert.equal(
+            (await TokenInstance.balanceOf.call(DaoDepositeAddress)).toNumber(),
+            balance + depositAmount - burnableAmount,
+            'After burn contract balance is incorrect'
         );
     })
 

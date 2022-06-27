@@ -451,6 +451,26 @@ contract Voting is Managing {
         _redeemTokens(issueId);
     }
 
+    function burnLostTokens() external onlyOwner
+    {
+        uint total;
+        for (uint issueId = 1; issueId <= _countProposals; issueId++) {
+            address creator = _proposals[issueId].creator;
+            uint amount = _deposited[creator][issueId];
+            if (amount > 0) {
+                ProposalInfo memory info = _proposalInfo(issueId);
+                if (!info.accepted && info.expiryTime < _timestamp()) {
+                    total += amount;
+                    _deposited[creator][issueId] = 0;
+                }
+            }
+        }
+        if (total > 0) {
+            _Token.redeemFromDAO(address(this), total);
+            _Token.burn(total);
+        }
+    }
+
     // TOKEN ONLY
 
     function updatedStake(address holder) external {
