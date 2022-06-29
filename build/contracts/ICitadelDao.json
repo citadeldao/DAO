@@ -15,41 +15,41 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.6.2+commit.bacdbe57\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"holder\",\"type\":\"address\"}],\"name\":\"updatedStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/pirat/Desktop/DAO_update/DAO/contracts/ICitadelDao.sol\":\"ICitadelDao\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/pirat/Desktop/DAO_update/DAO/contracts/ICitadelDao.sol\":{\"keccak256\":\"0xd8f6039ac8a8dabc55cc471f625437fa0e6db978109930f18b783908330a0b3f\",\"urls\":[\"bzz-raw://4ce5e24674abe3be12c26a0fe9b7e031a49cb804054b5d0fca3e8e3887d15c10\",\"dweb:/ipfs/QmXR95inmjb2NGBK2PhYVNm13WPzTqMAdiRskKs5yS5Zu6\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.6.2+commit.bacdbe57\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"holder\",\"type\":\"address\"}],\"name\":\"updatedStake\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"project:/contracts/ICitadelDao.sol\":\"ICitadelDao\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/ICitadelDao.sol\":{\"keccak256\":\"0xd8f6039ac8a8dabc55cc471f625437fa0e6db978109930f18b783908330a0b3f\",\"urls\":[\"bzz-raw://4ce5e24674abe3be12c26a0fe9b7e031a49cb804054b5d0fca3e8e3887d15c10\",\"dweb:/ipfs/QmXR95inmjb2NGBK2PhYVNm13WPzTqMAdiRskKs5yS5Zu6\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: GPL-3.0\npragma solidity 0.6.2;\npragma experimental ABIEncoderV2;\n\n\ninterface ICitadelDao {\n\n    function updatedStake(address holder) external;\n\n}",
-  "sourcePath": "/home/pirat/Desktop/DAO_update/DAO/contracts/ICitadelDao.sol",
+  "sourcePath": "/home/pirat/Desktop/DAO_update/fix_dao/contracts/ICitadelDao.sol",
   "ast": {
-    "absolutePath": "/home/pirat/Desktop/DAO_update/DAO/contracts/ICitadelDao.sol",
+    "absolutePath": "project:/contracts/ICitadelDao.sol",
     "exportedSymbols": {
       "ICitadelDao": [
-        15188
+        8562
       ]
     },
-    "id": 15189,
+    "id": 8563,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 15181,
+        "id": 8555,
         "literals": [
           "solidity",
           "0.6",
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "36:22:40"
+        "src": "36:22:22"
       },
       {
-        "id": 15182,
+        "id": 8556,
         "literals": [
           "experimental",
           "ABIEncoderV2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "59:33:40"
+        "src": "59:33:22"
       },
       {
         "abstract": false,
@@ -58,9 +58,9 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 15188,
+        "id": 8562,
         "linearizedBaseContracts": [
-          15188
+          8562
         ],
         "name": "ICitadelDao",
         "nodeType": "ContractDefinition",
@@ -69,7 +69,7 @@
             "body": null,
             "documentation": null,
             "functionSelector": "70c88f30",
-            "id": 15187,
+            "id": 8561,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -77,17 +77,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 15185,
+              "id": 8559,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 15184,
+                  "id": 8558,
                   "name": "holder",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 15187,
-                  "src": "146:14:40",
+                  "scope": 8561,
+                  "src": "146:14:22",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -95,10 +95,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 15183,
+                    "id": 8557,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "146:7:40",
+                    "src": "146:7:22",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -109,142 +109,166 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "145:16:40"
+              "src": "145:16:22"
             },
             "returnParameters": {
-              "id": 15186,
+              "id": 8560,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "170:0:40"
+              "src": "170:0:22"
             },
-            "scope": 15188,
-            "src": "124:47:40",
+            "scope": 8562,
+            "src": "124:47:22",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 15189,
-        "src": "95:79:40"
+        "scope": 8563,
+        "src": "95:79:22"
       }
     ],
-    "src": "36:138:40"
+    "src": "36:138:22"
   },
   "legacyAST": {
-    "absolutePath": "/home/pirat/Desktop/DAO_update/DAO/contracts/ICitadelDao.sol",
-    "exportedSymbols": {
-      "ICitadelDao": [
-        15188
-      ]
+    "attributes": {
+      "absolutePath": "project:/contracts/ICitadelDao.sol",
+      "exportedSymbols": {
+        "ICitadelDao": [
+          8562
+        ]
+      }
     },
-    "id": 15189,
-    "nodeType": "SourceUnit",
-    "nodes": [
+    "children": [
       {
-        "id": 15181,
-        "literals": [
-          "solidity",
-          "0.6",
-          ".2"
-        ],
-        "nodeType": "PragmaDirective",
-        "src": "36:22:40"
+        "attributes": {
+          "literals": [
+            "solidity",
+            "0.6",
+            ".2"
+          ]
+        },
+        "id": 8555,
+        "name": "PragmaDirective",
+        "src": "36:22:22"
       },
       {
-        "id": 15182,
-        "literals": [
-          "experimental",
-          "ABIEncoderV2"
-        ],
-        "nodeType": "PragmaDirective",
-        "src": "59:33:40"
+        "attributes": {
+          "literals": [
+            "experimental",
+            "ABIEncoderV2"
+          ]
+        },
+        "id": 8556,
+        "name": "PragmaDirective",
+        "src": "59:33:22"
       },
       {
-        "abstract": false,
-        "baseContracts": [],
-        "contractDependencies": [],
-        "contractKind": "interface",
-        "documentation": null,
-        "fullyImplemented": false,
-        "id": 15188,
-        "linearizedBaseContracts": [
-          15188
-        ],
-        "name": "ICitadelDao",
-        "nodeType": "ContractDefinition",
-        "nodes": [
+        "attributes": {
+          "abstract": false,
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "interface",
+          "documentation": null,
+          "fullyImplemented": false,
+          "linearizedBaseContracts": [
+            8562
+          ],
+          "name": "ICitadelDao",
+          "scope": 8563
+        },
+        "children": [
           {
-            "body": null,
-            "documentation": null,
-            "functionSelector": "70c88f30",
-            "id": 15187,
-            "implemented": false,
-            "kind": "function",
-            "modifiers": [],
-            "name": "updatedStake",
-            "nodeType": "FunctionDefinition",
-            "overrides": null,
-            "parameters": {
-              "id": 15185,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 15184,
-                  "name": "holder",
-                  "nodeType": "VariableDeclaration",
-                  "overrides": null,
-                  "scope": 15187,
-                  "src": "146:14:40",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
-                  },
-                  "typeName": {
-                    "id": 15183,
-                    "name": "address",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "146:7:40",
-                    "stateMutability": "nonpayable",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
+            "attributes": {
+              "body": null,
+              "documentation": null,
+              "functionSelector": "70c88f30",
+              "implemented": false,
+              "isConstructor": false,
+              "kind": "function",
+              "modifiers": [
+                null
               ],
-              "src": "145:16:40"
+              "name": "updatedStake",
+              "overrides": null,
+              "scope": 8562,
+              "stateMutability": "nonpayable",
+              "virtual": false,
+              "visibility": "external"
             },
-            "returnParameters": {
-              "id": 15186,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "170:0:40"
-            },
-            "scope": 15188,
-            "src": "124:47:40",
-            "stateMutability": "nonpayable",
-            "virtual": false,
-            "visibility": "external"
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "holder",
+                      "overrides": null,
+                      "scope": 8561,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "address",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "address",
+                          "stateMutability": "nonpayable",
+                          "type": "address"
+                        },
+                        "id": 8557,
+                        "name": "ElementaryTypeName",
+                        "src": "146:7:22"
+                      }
+                    ],
+                    "id": 8558,
+                    "name": "VariableDeclaration",
+                    "src": "146:14:22"
+                  }
+                ],
+                "id": 8559,
+                "name": "ParameterList",
+                "src": "145:16:22"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 8560,
+                "name": "ParameterList",
+                "src": "170:0:22"
+              }
+            ],
+            "id": 8561,
+            "name": "FunctionDefinition",
+            "src": "124:47:22"
           }
         ],
-        "scope": 15189,
-        "src": "95:79:40"
+        "id": 8562,
+        "name": "ContractDefinition",
+        "src": "95:79:22"
       }
     ],
-    "src": "36:138:40"
+    "id": 8563,
+    "name": "SourceUnit",
+    "src": "36:138:22"
   },
   "compiler": {
     "name": "solc",
     "version": "0.6.2+commit.bacdbe57.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.2.5",
-  "updatedAt": "2021-08-16T15:52:52.790Z",
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2022-06-28T15:23:34.886Z",
   "devdoc": {
     "methods": {}
   },
