@@ -161,10 +161,8 @@ contract Voting is Managing {
             return true;
         }
         if (_everyoneCreateProposal) {
-            uint staked = _Token.lockedBalanceOf(account);
-            if (staked >= _minAmountToCreate) {
-                return true;
-            }
+            uint balance = _Token.balanceOf(account);
+            return balance >= _minAmountToCreate;
         }
         return false;
     }
@@ -246,6 +244,7 @@ contract Voting is Managing {
         ProposalUpdater votingUpdater,
         uint nay,
         uint yea,
+        uint totalVotingPower,
         bool hasQuorum,
         bool accepted,
         uint expiryTime
@@ -259,6 +258,9 @@ contract Voting is Managing {
         hasQuorum = info.hasQuorum;
         accepted = info.accepted;
         expiryTime = info.expiryTime;
+
+        Proposal memory proposal = _proposals[issueId];
+        totalVotingPower = proposal.totalVotingPower;
     }
 
     function proposalConfig(uint issueId) external view
@@ -449,20 +451,44 @@ contract Voting is Managing {
         _redeemTokens(issueId);
     }
 
+    function burnLostTokens() external onlyOwner
+    {
+        uint total;
+        for (uint issueId = 1; issueId <= _countProposals; issueId++) {
+            address creator = _proposals[issueId].creator;
+            uint amount = _deposited[creator][issueId];
+            if (amount > 0) {
+                ProposalInfo memory info = _proposalInfo(issueId);
+                if (!info.accepted && info.expiryTime < _timestamp()) {
+                    total += amount;
+                    _deposited[creator][issueId] = 0;
+                }
+            }
+        }
+        if (total > 0) {
+            _Token.redeemFromDAO(address(this), total);
+            _Token.burn(total);
+        }
+    }
+
     // TOKEN ONLY
 
     function updatedStake(address holder) external {
         require(msg.sender == address(_Token));
+        if (_holderActiveVotes[holder].length == 0) return;
+        
         uint[] memory list = _holderActiveVotes[holder];
-        if (list.length == 0) return;
         uint supply = _Token.lockedSupply();
         uint tokens = _Token.lockedBalanceOf(holder);
-        uint[] memory resetList;
-        uint newIndex;
+        uint skipNum;
         for (uint i; i < list.length; i++) {
             uint issueId = list[i];
             Proposal storage proposal = _proposals[issueId];
-            if (proposal.expiryTime < _timestamp()) continue;
+            if (proposal.expiryTime < _timestamp()) {
+                skipNum++;
+                list[i] = 0;
+                continue;
+            }
             GotVote storage aVote = _voted[holder][issueId];
             if (tokens == 0) {
                 proposal.voters--;
@@ -471,6 +497,9 @@ contract Voting is Managing {
                 proposal.options[aVote.option].count--;
                 aVote.amount = 0;
                 proposal.hasQuorum = proposal.totalVotingPower * 100000 / supply >= proposal.quorumPct;
+                
+                skipNum++;
+                list[i] = 0;
                 continue;
             }
             if (aVote.amount > tokens) {
@@ -480,10 +509,24 @@ contract Voting is Managing {
             }
             aVote.amount = tokens;
             proposal.hasQuorum = proposal.totalVotingPower * 100000 / supply >= proposal.quorumPct;
-            resetList[newIndex] = issueId;
-            newIndex++;
         }
-        _holderActiveVotes[holder] = resetList;
+
+        if (skipNum > 0) {
+            if (skipNum == _holderActiveVotes[holder].length) {
+                _holderActiveVotes[holder] = new uint[](0);
+            } else {
+                uint[] memory resetList = new uint[](_holderActiveVotes[holder].length - skipNum);
+                uint newIndex;
+                for (uint i; i < list.length; i++) {
+                    uint issueId = list[i];
+                    if (issueId > 0) {
+                        resetList[newIndex] = issueId;
+                        newIndex++;
+                    }
+                }
+                _holderActiveVotes[holder] = resetList;
+            }
+        }
     }
 
     // PUBLIC UTILS

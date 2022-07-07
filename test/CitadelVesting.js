@@ -45,7 +45,7 @@ contract('CitadelVesting', function(accounts){
 
     it('Stake without activating is prohibited', async function(){
         try {
-            console.log(await TokenInstance.stake.sendTransaction(500_000 * tokenMultiplier));
+            await TokenInstance.stake.sendTransaction(500_000 * tokenMultiplier);
         } catch ({ reason }) {
             return assert.equal(reason, 'CitadelInflation: coming soon');
         }
@@ -546,7 +546,7 @@ contract('CitadelVesting', function(accounts){
         )
 
     })
-
+    
     it('Period 18: 2025, 365 days (skip + claim)', async function(){
 
         time += days(65);

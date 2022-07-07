@@ -1,3 +1,10 @@
 node_modules
 package-lock.json
 .secret
+.team.list
+.advisors.list
+.private1.list
+.private2.list
+.ecofund.list
+.foundfund.list
+.commfund.list

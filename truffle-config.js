@@ -11,35 +11,36 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*', // Match any network id
-      gas: 12721975
-    },
-    rinkeby: {
-      host: 'localhost',
-      port: 8888,
-      network_id: '4', // Rinkeby ID 4
-      from: '0xF83B25aeC2360265Fb77C76ED0982AD6cE924FEB', // account from which to deploy
-      gas: 6712390
+      gas: 12721975,
+      gasPrice: 10000000000
     },
     testnet: {
       provider: () => new HDWalletProvider({
         mnemonic,
         addressIndex: 0,
+        numberOfAddresses: 1,
         providerOrUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
         chainId: 97,
       }),
-      //provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
-      //from: "0x80928d7cfddf14bf2fb54ffde20fd52ddcde76f9",
       network_id: 97,
       confirmations: 3,
       timeoutBlocks: 1000,
-      skipDryRun: true
+      skipDryRun: true,
+      gasPrice: 10000000000
     },
     bsc: {
-      provider: () => new HDWalletProvider(mnemonic, 'https://bsc-dataseed1.binance.org'),
+      provider: () => new HDWalletProvider({
+        mnemonic,
+        addressIndex: 56,
+        numberOfAddresses: 1,
+        providerOrUrl: 'https://bsc-dataseed1.binance.org',
+        chainId: 56,
+      }),
       network_id: 56,
       confirmations: 10,
       timeoutBlocks: 200,
-      skipDryRun: false
+      skipDryRun: false,
+      gasPrice: 10000000000
     },
   },
   compilers: {
