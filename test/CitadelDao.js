@@ -1068,7 +1068,7 @@ contract('CitadelDao Voting (Updater)', function(accounts){
         }
         
         const titleInflation = 'Update deposit';
-        const newValue = '500'; // 50 XCT
+        const newValue = '500'; // 0.0005 XCT
 
         await DaoInstance.newProposal.sendTransaction(
             titleInflation,
